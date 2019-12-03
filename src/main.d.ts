@@ -1,1 +1,1 @@
-import "idb.filesystem.js";
+export {};

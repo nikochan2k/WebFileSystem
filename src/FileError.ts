@@ -8,6 +8,11 @@ export const INVALID_MODIFICATION_ERR: FileError = {
 };
 
 export const NOT_FOUND_ERR: FileError = {
-  name: "NOT_FOUND_ERR",
+  name: "Not found",
+  code: 1
+};
+
+export const NOT_IMPLEMENTED_ERR: FileError = {
+  name: "Not implemented",
   code: 1
 };
