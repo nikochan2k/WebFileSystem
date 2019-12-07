@@ -10,6 +10,7 @@ import {
 import { IdbFileSystem } from "./IdbFileSystem";
 import { IdbParams } from "./IdbParams";
 import { NOT_IMPLEMENTED_ERR } from "../FileError";
+import { onError } from "./IdbUtil";
 
 export abstract class IdbEntry implements Entry {
   abstract isFile: boolean;
@@ -35,7 +36,7 @@ export abstract class IdbEntry implements Entry {
         successCallback();
       })
       .catch(err => {
-        errorCallback(err);
+        onError(err, errorCallback);
       });
   }
 

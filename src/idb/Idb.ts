@@ -1,16 +1,22 @@
 import { DIR_OPEN_BOUND, DIR_SEPARATOR } from "./IdbConstants";
+import { IDB_SUPPORTS_BLOB } from "./IdbLocalFileSystem";
 import { IdbDirectoryEntry } from "./IdbDirectoryEntry";
+import { IdbEntry } from "./IdbEntry";
 import { IdbFileEntry } from "./IdbFileEntry";
+import { IdbFileSystem } from "./IdbFileSystem";
 import { IdbObject } from "./IdbObject";
+import { toBlob } from "./IdbUtil";
 
 const FILE_STORE = "entries";
 
 export class Idb {
-  db: IDBDatabase;
+  private db: IDBDatabase;
   storageType: string;
+  filesystem: IdbFileSystem;
 
   constructor(storageType: string) {
     this.storageType = storageType;
+    this.filesystem = new IdbFileSystem(this);
   }
 
   private onError(this: any, ev: Event) {
@@ -25,16 +31,11 @@ export class Idb {
       const request = indexedDB.open(
         dbName.replace(":", "_") /*, 1 /*version*/
       );
-      request.onerror = function(ev) {
-        reject(ev);
-      };
-
       request.onupgradeneeded = function(ev) {
         // First open was called or higher db version was used.
 
         // console.log('onupgradeneeded: oldVersion:' + e.oldVersion,
         //           'newVersion:' + e.newVersion);
-
         const request = ev.target as IDBRequest;
         self.db = request.result;
         self.db.onerror = self.onError;
@@ -44,16 +45,16 @@ export class Idb {
             FILE_STORE /*,{keyPath: 'id', autoIncrement: true}*/
           );
         }
-
-        resolve();
       };
-
       request.onsuccess = function(e) {
+        console.log("onsuccess");
         self.db = (e.target as IDBRequest).result;
         self.db.onerror = self.onError;
         resolve();
       };
-
+      request.onerror = function(ev) {
+        reject(ev);
+      };
       request.onblocked = function(ev) {
         reject(ev);
       };
@@ -83,6 +84,7 @@ export class Idb {
   }
 
   get(fullPath: string) {
+    console.log(fullPath);
     return new Promise<IdbObject>((resolve, reject) => {
       const tx = this.db.transaction([FILE_STORE], "readonly");
       //const request = tx.objectStore(FILE_STORE_).get(fullPath);
@@ -103,11 +105,11 @@ export class Idb {
   }
 
   getAllEntries(fullPath: string) {
-    return new Promise<Entry[]>((resolve, reject) => {
-      let results: Entry[] = [];
+    return new Promise<IdbEntry[]>((resolve, reject) => {
+      let entries: IdbEntry[] = [];
 
-      //var range = IDBKeyRange.lowerBound(fullPath, true);
-      //var range = IDBKeyRange.upperBound(fullPath, true);
+      //const range = IDBKeyRange.lowerBound(fullPath, true);
+      //const range = IDBKeyRange.upperBound(fullPath, true);
 
       // Treat the root entry special. Querying it returns all entries because
       // they match '/'.
@@ -129,37 +131,54 @@ export class Idb {
       tx.oncomplete = function(ev) {
         // TODO: figure out how to do be range queries instead of filtering result
         // in memory :(
-        results = results.filter(function(val) {
-          var valPartsLen = val.fullPath.split(DIR_SEPARATOR).length;
-          var fullPathPartsLen = fullPath.split(DIR_SEPARATOR).length;
+        entries = entries.filter(function(entry) {
+          const entryPartsLen = entry.fullPath.split(DIR_SEPARATOR).length;
+          const fullPathPartsLen = fullPath.split(DIR_SEPARATOR).length;
 
-          if (fullPath == DIR_SEPARATOR && valPartsLen < fullPathPartsLen + 1) {
+          if (
+            fullPath == DIR_SEPARATOR &&
+            entryPartsLen < fullPathPartsLen + 1
+          ) {
             // Hack to filter out entries in the root folder. This is inefficient
             // because reading the entires of fs.root (e.g. '/') returns ALL
             // results in the database, then filters out the entries not in '/'.
-            return val;
+            return entry;
           } else if (
             fullPath != DIR_SEPARATOR &&
-            valPartsLen == fullPathPartsLen + 1
+            entryPartsLen == fullPathPartsLen + 1
           ) {
             // If this a subfolder and entry is a direct child, include it in
             // the results. Otherwise, it's not an entry of this folder.
-            return val;
+            return entry;
           }
         });
 
-        resolve(results);
+        resolve(entries);
       };
 
-      var request = tx.objectStore(FILE_STORE).openCursor(range);
-
+      const request = tx.objectStore(FILE_STORE).openCursor(range);
+      const filesystem = this.filesystem;
       request.onsuccess = function(ev) {
-        var cursor = <IDBCursorWithValue>(<IDBRequest>ev.target).result;
+        const cursor = <IDBCursorWithValue>(<IDBRequest>ev.target).result;
         if (cursor) {
-          var val = cursor.value;
+          const obj = cursor.value as IdbObject;
 
-          results.push(
-            val.isFile ? new IdbFileEntry(val) : new IdbDirectoryEntry(val)
+          entries.push(
+            obj.isFile
+              ? new IdbFileEntry({
+                  filesystem: filesystem,
+                  name: obj.name,
+                  fullPath: obj.fullPath,
+                  lastModifiedDate: new Date(obj.lastModified),
+                  blob: IDB_SUPPORTS_BLOB
+                    ? (obj.content as Blob)
+                    : toBlob(obj.content as string)
+                })
+              : new IdbDirectoryEntry({
+                  filesystem: filesystem,
+                  name: obj.name,
+                  fullPath: obj.fullPath
+                })
           );
           cursor["continue"]();
         }
@@ -181,7 +200,7 @@ export class Idb {
         resolve();
       };
 
-      //var request = tx.objectStore(FILE_STORE_).delete(fullPath);
+      //const request = tx.objectStore(FILE_STORE_).delete(fullPath);
       const range = IDBKeyRange.bound(
         fullPath,
         fullPath + DIR_OPEN_BOUND,
@@ -198,7 +217,7 @@ export class Idb {
         resolve(null);
       }
 
-      var tx = this.db.transaction([FILE_STORE], "readwrite");
+      const tx = this.db.transaction([FILE_STORE], "readwrite");
       tx.onabort = function(ev) {
         reject(ev);
       };

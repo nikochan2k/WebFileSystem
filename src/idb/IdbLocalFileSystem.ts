@@ -5,7 +5,8 @@ import {
   LocalFileSystem
 } from "../filesystem";
 import { Idb } from "./Idb";
-import { IdbFileSystem } from "./IdbFileSystem";
+import { NOT_IMPLEMENTED_ERR } from "../FileError";
+import { onError } from "./IdbUtil";
 
 export let IDB_SUPPORTS_BLOB = true;
 
@@ -15,32 +16,36 @@ const indexedDB: IDBFactory =
   (window as any).msIndexedDB;
 
 // Check to see if IndexedDB support blobs.
-(() => {
-  const dbName = "blob-support";
-  indexedDB.deleteDatabase(dbName).onsuccess = function() {
-    const request = indexedDB.open(dbName, 1);
-    request.onerror = function() {
-      IDB_SUPPORTS_BLOB = false;
-    };
-    request.onsuccess = function() {
-      var db = request.result;
-      try {
-        const blob = new Blob(["test"], { type: "text/plain" });
-        const transaction = db.transaction("store", "readwrite");
-        transaction.objectStore("store").put(blob, "key");
-        IDB_SUPPORTS_BLOB = true;
-      } catch (err) {
+export function initialize() {
+  return new Promise((resolve, reject) => {
+    const dbName = "blob-support";
+    indexedDB.deleteDatabase(dbName).onsuccess = function() {
+      const request = indexedDB.open(dbName, 1);
+      request.onupgradeneeded = function() {
+        request.result.createObjectStore("store");
+      };
+      request.onerror = function() {
         IDB_SUPPORTS_BLOB = false;
-      } finally {
-        db.close();
-        indexedDB.deleteDatabase(dbName);
-      }
+        resolve();
+      };
+      request.onsuccess = function() {
+        const db = request.result;
+        try {
+          const blob = new Blob(["test"], { type: "text/plain" });
+          const transaction = db.transaction("store", "readwrite");
+          transaction.objectStore("store").put(blob, "key");
+          IDB_SUPPORTS_BLOB = true;
+        } catch (err) {
+          IDB_SUPPORTS_BLOB = false;
+        } finally {
+          db.close();
+          indexedDB.deleteDatabase(dbName);
+        }
+        resolve();
+      };
     };
-    request.onupgradeneeded = function() {
-      request.result.createObjectStore("store");
-    };
-  };
-})();
+  });
+}
 
 export class IdbLocalFileSystem implements LocalFileSystem {
   readonly TEMPORARY = 0;
@@ -61,11 +66,10 @@ export class IdbLocalFileSystem implements LocalFileSystem {
     idb
       .open(dbName)
       .then(() => {
-        const fs = new IdbFileSystem(idb);
-        successCallback(fs);
+        successCallback(idb.filesystem);
       })
       .catch(err => {
-        errorCallback(err);
+        onError(err, errorCallback);
       });
   }
 
@@ -74,6 +78,6 @@ export class IdbLocalFileSystem implements LocalFileSystem {
     successCallback: EntryCallback,
     errorCallback?: ErrorCallback | undefined
   ): void {
-    throw new Error("Method not implemented.");
+    throw NOT_IMPLEMENTED_ERR;
   }
 }

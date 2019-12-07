@@ -13,7 +13,7 @@ import { IdbFileEntry } from "./IdbFileEntry";
 import { IdbObject } from "./IdbObject";
 import { IdbParams } from "./IdbParams";
 import { INVALID_MODIFICATION_ERR, NOT_FOUND_ERR } from "../FileError";
-import { toBlob } from "./IdbUtil";
+import { toBlob, onError } from "./IdbUtil";
 
 function resolveToFullPath(cwdFullPath: string, path: string) {
   let fullPath = path;
@@ -60,6 +60,8 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
     return new IdbDirectoryReader(this);
   }
 
+  createFile() {}
+
   getFile(
     path: string,
     options?: Flags | undefined,
@@ -81,10 +83,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
             // If create and exclusive are both true, and the path already exists,
             // getFile must fail.
 
-            if (errorCallback) {
-              errorCallback(INVALID_MODIFICATION_ERR);
-              return;
-            }
+            onError(INVALID_MODIFICATION_ERR, errorCallback);
           } else if (!obj) {
             // If create is true, the path doesn't exist, and no other error occurs,
             // getFile must create it as a zero-length file and return a corresponding
@@ -112,7 +111,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
                 );
               })
               .catch(err => {
-                errorCallback(err);
+                onError(err, errorCallback);
               });
           } else if (obj) {
             if (obj.isFile) {
@@ -129,26 +128,17 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
                 })
               );
             } else {
-              if (errorCallback) {
-                errorCallback(INVALID_MODIFICATION_ERR);
-                return;
-              }
+              onError(INVALID_MODIFICATION_ERR, errorCallback);
             }
           }
         } else {
           if (!obj) {
             // If create is not true and the path doesn't exist, getFile must fail.
-            if (errorCallback) {
-              errorCallback(NOT_FOUND_ERR);
-              return;
-            }
+            onError(NOT_FOUND_ERR, errorCallback);
           } else if (obj && obj.isDirectory) {
             // If create is not true and the path exists, but is a directory, getFile
             // must fail.
-            if (errorCallback) {
-              errorCallback(INVALID_MODIFICATION_ERR);
-              return;
-            }
+            onError(INVALID_MODIFICATION_ERR, errorCallback);
           } else {
             // Otherwise, if no other error occurs, getFile must return a FileEntry
             // corresponding to path.
@@ -169,7 +159,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
         }
       })
       .catch(err => {
-        errorCallback(err);
+        onError(err, errorCallback);
       });
   }
 
@@ -194,10 +184,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
           if (options.exclusive && obj) {
             // If create and exclusive are both true, and the path already exists,
             // getDirectory must fail.
-            if (errorCallback) {
-              errorCallback(INVALID_MODIFICATION_ERR);
-              return;
-            }
+            onError(INVALID_MODIFICATION_ERR, errorCallback);
           } else if (!obj) {
             // If create is true, the path doesn't exist, and no other error occurs,
             // getDirectory must create it as a zero-length file and return a corresponding
@@ -221,7 +208,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
                 );
               })
               .catch(err => {
-                errorCallback(err);
+                onError(err, errorCallback);
               });
           } else if (obj) {
             if (obj.isDirectory) {
@@ -234,10 +221,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
                 })
               );
             } else {
-              if (errorCallback) {
-                errorCallback(INVALID_MODIFICATION_ERR);
-                return;
-              }
+              onError(INVALID_MODIFICATION_ERR, errorCallback);
             }
           }
         } else {
@@ -255,17 +239,11 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
             }
 
             // If create is not true and the path doesn't exist, getDirectory must fail.
-            if (errorCallback) {
-              errorCallback(NOT_FOUND_ERR);
-              return;
-            }
+            onError(NOT_FOUND_ERR, errorCallback);
           } else if (obj && obj.isFile) {
             // If create is not true and the path exists, but is a file, getDirectory
             // must fail.
-            if (errorCallback) {
-              errorCallback(INVALID_MODIFICATION_ERR);
-              return;
-            }
+            onError(INVALID_MODIFICATION_ERR, errorCallback);
           } else {
             // Otherwise, if no other error occurs, getDirectory must return a
             // DirectoryEntry corresponding to path.
@@ -282,7 +260,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
         }
       })
       .catch(err => {
-        errorCallback(err);
+        onError(err, errorCallback);
       });
   }
 

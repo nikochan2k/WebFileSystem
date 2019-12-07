@@ -1,8 +1,10 @@
+import { DEFAULT_BLOB_PROPS } from "./IdbConstants";
 import { FileWriter } from "../filewriter";
 import { IDB_SUPPORTS_BLOB } from "./IdbLocalFileSystem";
 import { IdbFileEntry } from "./IdbFileEntry";
 import { IdbObject } from "./IdbObject";
-import { blobToBase64 as toBase64 } from "./IdbUtil";
+import { NOT_IMPLEMENTED_ERR } from "../FileError";
+import { toBase64 } from "./IdbUtil";
 
 export class IdbFileWriter implements FileWriter {
   private blob: Blob;
@@ -26,11 +28,11 @@ export class IdbFileWriter implements FileWriter {
 
     if (this.blob) {
       // Calc the head and tail fragments
-      var head = this.blob.slice(0, this.position);
-      var tail = this.blob.slice(this.position + data.size);
+      const head = this.blob.slice(0, this.position);
+      const tail = this.blob.slice(this.position + data.size);
 
       // Calc the padding
-      var padding = this.position - head.size;
+      let padding = this.position - head.size;
       if (padding < 0) {
         padding = 0;
       }
@@ -65,11 +67,9 @@ export class IdbFileWriter implements FileWriter {
           // Add size of data written to writer.position.
           this.position += data.size;
 
-          /*
           if (this.onwriteend) {
-            this.onwriteend();
+            this.onwriteend(null); // TODO
           }
-          */
         })
         .catch(err => {
           this.onabort(err);
@@ -103,7 +103,7 @@ export class IdbFileWriter implements FileWriter {
         });
       }
     } else {
-      this.blob = new Blob([]);
+      this.blob = new Blob([], DEFAULT_BLOB_PROPS);
     }
 
     this.position = 0; // truncate from beginning of file.
@@ -112,7 +112,7 @@ export class IdbFileWriter implements FileWriter {
   }
 
   abort(): void {
-    throw new Error("Method not implemented.");
+    throw NOT_IMPLEMENTED_ERR;
   }
 
   INIT: number;
@@ -132,11 +132,11 @@ export class IdbFileWriter implements FileWriter {
     listener: EventListenerOrEventListenerObject,
     options?: boolean | AddEventListenerOptions
   ): void {
-    throw new Error("Method not implemented.");
+    throw NOT_IMPLEMENTED_ERR;
   }
 
   dispatchEvent(event: Event): boolean {
-    throw new Error("Method not implemented.");
+    throw NOT_IMPLEMENTED_ERR;
   }
 
   removeEventListener(
@@ -144,6 +144,6 @@ export class IdbFileWriter implements FileWriter {
     callback: EventListenerOrEventListenerObject,
     options?: boolean | EventListenerOptions
   ): void {
-    throw new Error("Method not implemented.");
+    throw NOT_IMPLEMENTED_ERR;
   }
 }

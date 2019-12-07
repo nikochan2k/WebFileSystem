@@ -1,5 +1,6 @@
 import { DirectoryReader, EntriesCallback, ErrorCallback } from "../filesystem";
 import { IdbDirectoryEntry } from "./IdbDirectoryEntry";
+import { onError } from "./IdbUtil";
 
 export class IdbDirectoryReader implements DirectoryReader {
   constructor(public dirEntry: IdbDirectoryEntry, public used = false) {}
@@ -22,7 +23,7 @@ export class IdbDirectoryReader implements DirectoryReader {
           successCallback(entries);
         })
         .catch(err => {
-          errorCallback(err);
+          onError(err, errorCallback);
         });
     } else {
       successCallback([]);
