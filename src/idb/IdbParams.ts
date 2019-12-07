@@ -1,6 +1,6 @@
 import { IdbFileSystem } from "./IdbFileSystem";
 
-export interface EntryParams {
+export interface IdbParams {
   filesystem: IdbFileSystem;
   name: string;
   fullPath: string;

@@ -4,7 +4,7 @@ import {
   ErrorCallback,
   EntryCallback,
   Entry
-} from "./idb/filesystem";
+} from "./filesystem";
 import { INVALID_MODIFICATION_ERR, NOT_FOUND_ERR } from "./FileError";
 
 const nativeFileSystem =

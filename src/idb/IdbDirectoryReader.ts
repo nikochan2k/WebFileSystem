@@ -1,4 +1,4 @@
-import { DirectoryReader, EntriesCallback, ErrorCallback } from "./filesystem";
+import { DirectoryReader, EntriesCallback, ErrorCallback } from "../filesystem";
 import { IdbDirectoryEntry } from "./IdbDirectoryEntry";
 
 export class IdbDirectoryReader implements DirectoryReader {

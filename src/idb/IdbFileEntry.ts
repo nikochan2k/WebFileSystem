@@ -1,83 +1,58 @@
-import { EntryParams } from "./EntryParams";
-import { FileEntry } from "./filesystem";
-import { IdbFileSystem } from "./IdbFileSystem";
+import {
+  ErrorCallback,
+  FileCallback,
+  FileEntry,
+  FileWriterCallback,
+  MetadataCallback
+} from "../filesystem";
+import { IdbEntry } from "./IdbEntry";
+import { IdbFileWriter } from "./IdbFileWriter";
+import { IdbParams } from "./IdbParams";
 
-interface FileEntryParams {
-  filesystem: IdbFileSystem;
+interface IdbFileParams extends IdbParams {
+  lastModifiedDate: Date;
   blob: Blob;
-  name: string;
-  fullPath: string;
 }
 
-export class IdbFileEntry implements FileEntry {
-  public isFile = true;
-  public isDirectory = false;
-  public filesystem: IdbFileSystem;
-  public blob: Blob;
-  public name: string;
-  public fullPath: string;
+export class IdbFileEntry extends IdbEntry implements FileEntry {
+  isFile = true;
+  isDirectory = false;
+  lastModifiedDate: Date;
+  blob: Blob;
 
-  constructor(entry: FileEntryParams) {
-    this.filesystem = entry.filesystem;
-    this.blob = entry.blob;
-    this.name = entry.name;
-    this.fullPath = entry.fullPath;
+  constructor(params: IdbFileParams) {
+    super(params);
+    this.lastModifiedDate = params.lastModifiedDate;
+    this.blob = params.blob;
   }
 
   createWriter(
     successCallback: FileWriterCallback,
     errorCallback?: ErrorCallback | undefined
   ): void {
-    throw new Error("Method not implemented.");
+    successCallback(new IdbFileWriter(this));
   }
 
   file(
     successCallback: FileCallback,
     errorCallback?: ErrorCallback | undefined
   ): void {
-    throw new Error("Method not implemented.");
+    successCallback({
+      name: this.name,
+      lastModified: this.lastModifiedDate.getTime(),
+      size: this.blob.size,
+      type: this.blob.type,
+      slice: this.blob.slice
+    });
   }
 
   getMetadata(
     successCallback: MetadataCallback,
-    errorCallback?: ErrorCallback | undefined
+    errorCallback?: ErrorCallback
   ): void {
-    throw new Error("Method not implemented.");
-  }
-
-  moveTo(
-    parent: DirectoryEntry,
-    newName?: string | undefined,
-    successCallback?: EntryCallback | undefined,
-    errorCallback?: ErrorCallback | undefined
-  ): void {
-    throw new Error("Method not implemented.");
-  }
-
-  copyTo(
-    parent: DirectoryEntry,
-    newName?: string | undefined,
-    successCallback?: EntryCallback | undefined,
-    errorCallback?: ErrorCallback | undefined
-  ): void {
-    throw new Error("Method not implemented.");
-  }
-
-  toURL(): string {
-    throw new Error("Method not implemented.");
-  }
-
-  remove(
-    successCallback: VoidCallback,
-    errorCallback?: ErrorCallback | undefined
-  ): void {
-    throw new Error("Method not implemented.");
-  }
-
-  getParent(
-    successCallback: DirectoryEntryCallback,
-    errorCallback?: ErrorCallback | undefined
-  ): void {
-    throw new Error("Method not implemented.");
+    successCallback({
+      modificationTime: this.lastModifiedDate,
+      size: this.blob.size
+    });
   }
 }

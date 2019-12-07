@@ -1,10 +1,11 @@
-import { DIR_SEPARATOR, IdbDirectoryEntry } from "./IdbDirectoryEntry";
-import { FileSystem } from "./filesystem";
+import { DIR_SEPARATOR } from "./IdbConstants";
+import { FileSystem } from "../filesystem";
 import { Idb } from "./Idb";
+import { IdbDirectoryEntry } from "./IdbDirectoryEntry";
 
 export class IdbFileSystem implements FileSystem {
   name: string;
-  root: DirectoryEntry;
+  root: IdbDirectoryEntry;
 
   constructor(public idb: Idb) {
     this.root = new IdbDirectoryEntry({

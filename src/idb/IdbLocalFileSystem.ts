@@ -1,8 +1,13 @@
+import {
+  EntryCallback,
+  ErrorCallback,
+  FileSystemCallback,
+  LocalFileSystem
+} from "../filesystem";
 import { Idb } from "./Idb";
 import { IdbFileSystem } from "./IdbFileSystem";
-import { LocalFileSystem } from "./filesystem";
 
-let IDB_SUPPORTS_BLOB = true;
+export let IDB_SUPPORTS_BLOB = true;
 
 const indexedDB: IDBFactory =
   window.indexedDB ||

@@ -1,10 +1,7 @@
-import {
-  DIR_OPEN_BOUND,
-  DIR_SEPARATOR,
-  IdbDirectoryEntry
-} from "./IdbDirectoryEntry";
-import { Entry } from "./filesystem";
+import { DIR_OPEN_BOUND, DIR_SEPARATOR } from "./IdbConstants";
+import { IdbDirectoryEntry } from "./IdbDirectoryEntry";
 import { IdbFileEntry } from "./IdbFileEntry";
+import { IdbObject } from "./IdbObject";
 
 const FILE_STORE = "entries";
 
@@ -86,7 +83,7 @@ export class Idb {
   }
 
   get(fullPath: string) {
-    return new Promise<Entry>((resolve, reject) => {
+    return new Promise<IdbObject>((resolve, reject) => {
       const tx = this.db.transaction([FILE_STORE], "readonly");
       //const request = tx.objectStore(FILE_STORE_).get(fullPath);
       const range = IDBKeyRange.bound(
@@ -195,8 +192,8 @@ export class Idb {
     });
   }
 
-  put(entry: Entry) {
-    return new Promise<Entry>((resolve, reject) => {
+  put(obj: IdbObject) {
+    return new Promise<IdbObject>((resolve, reject) => {
       if (!this.db) {
         resolve(null);
       }
@@ -206,10 +203,10 @@ export class Idb {
         reject(ev);
       };
       tx.oncomplete = function(ev) {
-        resolve(entry);
+        resolve(obj);
       };
 
-      tx.objectStore(FILE_STORE).put(entry, entry.fullPath);
+      tx.objectStore(FILE_STORE).put(obj, obj.fullPath);
     });
   }
 }
