@@ -51,9 +51,11 @@ function resolveToFullPath(cwdFullPath: string, path: string) {
 export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
   public isFile = false;
   public isDirectory = true;
+  public lastModifiedDate: Date;
 
-  constructor(entry: IdbParams) {
-    super(entry);
+  constructor(params: IdbParams) {
+    super(params);
+    this.lastModifiedDate = params.lastModifiedDate;
   }
 
   createReader(): DirectoryReader {
@@ -91,7 +93,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
             const newObj: IdbObject = {
               isFile: true,
               isDirectory: false,
-              name: obj.name,
+              name: path.split(DIR_SEPARATOR).pop(),
               fullPath: path,
               lastModified: Date.now(),
               content: IDB_SUPPORTS_BLOB ? EMPTY_BLOB : ""
@@ -120,7 +122,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
                 new IdbFileEntry({
                   filesystem: this.filesystem,
                   name: obj.name,
-                  fullPath: path,
+                  fullPath: obj.fullPath,
                   lastModifiedDate: new Date(),
                   blob: IDB_SUPPORTS_BLOB
                     ? (obj.content as Blob)
@@ -148,8 +150,8 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
               new IdbFileEntry({
                 filesystem: this.filesystem,
                 name: obj.name,
-                fullPath: path,
-                lastModifiedDate: new Date(),
+                fullPath: obj.fullPath,
+                lastModifiedDate: new Date(obj.lastModified),
                 blob: IDB_SUPPORTS_BLOB
                   ? (obj.content as Blob)
                   : toBlob(obj.content as string)
@@ -193,7 +195,8 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
               isFile: false,
               isDirectory: true,
               name: path.split(DIR_SEPARATOR).pop(), // Just need filename.
-              fullPath: path
+              fullPath: path,
+              lastModified: Date.now()
             };
 
             idb
@@ -203,7 +206,8 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
                   new IdbDirectoryEntry({
                     filesystem: this.filesystem,
                     name: newObj.name,
-                    fullPath: newObj.fullPath
+                    fullPath: newObj.fullPath,
+                    lastModifiedDate: new Date(newObj.lastModified)
                   })
                 );
               })
@@ -217,7 +221,8 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
                 new IdbDirectoryEntry({
                   filesystem: this.filesystem,
                   name: obj.name,
-                  fullPath: obj.fullPath
+                  fullPath: obj.fullPath,
+                  lastModifiedDate: new Date(obj.lastModified)
                 })
               );
             } else {
@@ -232,7 +237,8 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
                 new IdbDirectoryEntry({
                   filesystem: this.filesystem,
                   name: "",
-                  fullPath: DIR_SEPARATOR
+                  fullPath: DIR_SEPARATOR,
+                  lastModifiedDate: new Date()
                 })
               );
               return;
@@ -252,8 +258,9 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
             successCallback(
               new IdbDirectoryEntry({
                 filesystem: this.filesystem,
-                name: "",
-                fullPath: DIR_SEPARATOR
+                name: obj.name,
+                fullPath: obj.fullPath,
+                lastModifiedDate: new Date(obj.lastModified)
               })
             );
           }
@@ -269,7 +276,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
     errorCallback?: ErrorCallback
   ): void {
     successCallback({
-      modificationTime: null,
+      modificationTime: this.lastModifiedDate,
       size: 0
     });
   }

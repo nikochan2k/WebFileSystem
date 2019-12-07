@@ -177,7 +177,8 @@ export class Idb {
               : new IdbDirectoryEntry({
                   filesystem: filesystem,
                   name: obj.name,
-                  fullPath: obj.fullPath
+                  fullPath: obj.fullPath,
+                  lastModifiedDate: new Date(obj.lastModified)
                 })
           );
           cursor["continue"]();

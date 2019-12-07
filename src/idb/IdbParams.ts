@@ -4,4 +4,5 @@ export interface IdbParams {
   filesystem: IdbFileSystem;
   name: string;
   fullPath: string;
+  lastModifiedDate: Date;
 }

@@ -10,7 +10,6 @@ import { IdbFileWriter } from "./IdbFileWriter";
 import { IdbParams } from "./IdbParams";
 
 interface IdbFileParams extends IdbParams {
-  lastModifiedDate: Date;
   blob: Blob;
 }
 
