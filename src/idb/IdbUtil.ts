@@ -1,10 +1,10 @@
 import { DEFAULT_BLOB_PROPS } from "./IdbConstants";
 import { ErrorCallback } from "../filesystem";
 
-export function toBlob(bin: string) {
-  const buffer = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) {
-    buffer[i] = bin.charCodeAt(i);
+export function toBlob(base64: string) {
+  const buffer = new Uint8Array(base64.length);
+  for (let i = 0; i < base64.length; i++) {
+    buffer[i] = base64.charCodeAt(i);
   }
   const blob = new Blob([buffer.buffer], DEFAULT_BLOB_PROPS);
   return blob;

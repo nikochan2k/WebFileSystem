@@ -6,6 +6,13 @@ import {
 } from "./filesystem";
 import { IdbFileSystemFactory } from "./idb/IdbFileSystemFactory";
 
+if (window.TEMPORARY == null) {
+  window.TEMPORARY = 0;
+}
+if (window.PERSISTENT == null) {
+  window.PERSISTENT = 1;
+}
+
 export class WebFileSystemFactory implements FileSystemFactory {
   private localFileSystem = {} as FileSystemFactory;
 
@@ -40,10 +47,10 @@ export class WebFileSystemFactory implements FileSystemFactory {
   }
 
   get TEMPORARY() {
-    return this.localFileSystem.TEMPORARY;
+    return window.TEMPORARY;
   }
   get PERSISTENT() {
-    return this.localFileSystem.PERSISTENT;
+    return window.PERSISTENT;
   }
 
   requestFileSystem(

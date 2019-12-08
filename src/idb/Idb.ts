@@ -18,11 +18,9 @@ export class Idb {
 
   private initialized = false;
   private db: IDBDatabase;
-  storageType: string;
   filesystem: IdbFileSystem;
 
-  constructor(storageType: string) {
-    this.storageType = storageType;
+  constructor(public storageType: string) {
     this.filesystem = new IdbFileSystem(this);
   }
 
