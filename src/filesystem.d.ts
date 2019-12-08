@@ -1,3 +1,5 @@
+import { FileWriter } from "./filewriter";
+
 // Type definitions for File System API
 // Project: http://www.w3.org/TR/file-system-api/
 // Definitions by: Kon <http://phyzkit.net/>
@@ -41,7 +43,7 @@ export interface LocalFileSystem {
   ): void;
 }
 
-export interface LocalFileSystemSync {
+export interface LocalFileSystemAsync {
   /**
    * Used for storage with no guarantee of persistence.
    */
@@ -57,13 +59,13 @@ export interface LocalFileSystemSync {
    * @param type Whether the filesystem requested should be persistent, as defined above. Use one of TEMPORARY or PERSISTENT.
    * @param size This is an indicator of how much storage space, in bytes, the application expects to need.
    */
-  requestFileSystemSync(type: number, size: number): FileSystemSync;
+  requestFileSystemAsync(type: number, size: number): Promise<FileSystemAsync>;
 
   /**
    * Allows the user to look up the Entry for a file or directory referred to by a local URL.
    * @param url A URL referring to a local file in a filesystem accessable via this API.
    */
-  resolveLocalFileSystemSyncURL(url: string): EntrySync;
+  resolveLocalFileSystemAsyncURL(url: string): Promise<EntryAsync>;
 }
 
 export interface Metadata {
@@ -402,7 +404,7 @@ export interface ErrorCallback {
 /**
  * This interface represents a file system.
  */
-export interface FileSystemSync {
+export interface FileSystemAsync {
   /**
    * This is the name of the file system. The specifics of naming filesystems is unspecified, but a name must be unique across the list of exposed file systems.
    */
@@ -411,13 +413,13 @@ export interface FileSystemSync {
   /**
    * root The root directory of the file system.
    */
-  root: DirectoryEntrySync;
+  root: DirectoryEntryAsync;
 }
 
 /**
  * An abstract interface representing entries in a file system, each of which may be a FileEntrySync or DirectoryEntrySync.
  */
-interface EntrySync {
+interface EntryAsync {
   /**
    * EntrySync is a file.
    * @readonly
@@ -433,7 +435,7 @@ interface EntrySync {
   /**
    * Look up metadata about this entry.
    */
-  getMetadata(): Metadata;
+  getMetadata(): Promise<Metadata>;
 
   /**
    * The name of the entry, excluding the path leading to it.
@@ -448,7 +450,7 @@ interface EntrySync {
   /**
    * The file system on which the entry resides.
    */
-  filesystem: FileSystemSync;
+  filesystem: FileSystemAsync;
 
   /**
    * Move an entry to a different location on the file system. It is an error to try to:
@@ -463,7 +465,7 @@ interface EntrySync {
    * @param parent The directory to which to move the entry.
    * @param newName The new name of the entry. Defaults to the EntrySync's current name if unspecified.
    */
-  moveTo(parent: DirectoryEntrySync, newName?: string): EntrySync;
+  moveTo(parent: DirectoryEntryAsync, newName?: string): Promise<EntryAsync>;
 
   /**
    * Copy an entry to a different location on the file system. It is an error to try to:
@@ -478,7 +480,7 @@ interface EntrySync {
    * A copy of a directory on top of an existing empty directory must attempt to delete and replace that directory.
    * Directory copies are always recursive--that is, they copy all contents of the directory.
    */
-  copyTo(parent: DirectoryEntrySync, newName?: string): EntrySync;
+  copyTo(parent: DirectoryEntry, newName?: string): Promise<EntryAsync>;
 
   /**
    * Returns a URL that can be used to identify this entry. Unlike the URN defined in [FILE-API-ED], it has no specific expiration; as it describes a location on disk, it should be valid at least as long as that location exists.
@@ -488,22 +490,22 @@ interface EntrySync {
   /**
    * Deletes a file or directory. It is an error to attempt to delete a directory that is not empty. It is an error to attempt to delete the root directory of a filesystem.
    */
-  remove(): void;
+  remove(): Promise<void>;
 
   /**
    * Look up the parent DirectoryEntrySync containing this Entry. If this EntrySync is the root of its filesystem, its parent is itself.
    */
-  getParent(): DirectoryEntrySync;
+  getParent(): Promise<DirectoryEntryAsync>;
 }
 
 /**
  * This interface represents a directory on a file system.
  */
-export interface DirectoryEntrySync extends EntrySync {
+export interface DirectoryEntryAsync extends EntryAsync {
   /**
    * Creates a new DirectoryReaderSync to read EntrySyncs from this DirectorySync.
    */
-  createReader(): DirectoryReaderSync;
+  createReader(): DirectoryReaderAsync;
 
   /**
    * Creates or looks up a directory.
@@ -517,7 +519,7 @@ export interface DirectoryEntrySync extends EntrySync {
    *     <li> Otherwise, if no other error occurs, getFile must return a FileEntrySync corresponding to path.</li>
    *     </ul>
    */
-  getFile(path: string, options?: Flags): FileEntrySync;
+  getFile(path: string, options?: Flags): Promise<FileEntryAsync>;
 
   /**
    * Creates or looks up a directory.
@@ -531,12 +533,12 @@ export interface DirectoryEntrySync extends EntrySync {
    *     <li> Otherwise, if no other error occurs, getDirectory must return a DirectoryEntrySync corresponding to path.</li>
    *     </ul>
    */
-  getDirectory(path: string, options?: Flags): DirectoryEntrySync;
+  getDirectory(path: string, options?: Flags): Promise<DirectoryEntryAsync>;
 
   /**
    * Deletes a directory and all of its contents, if any. In the event of an error [e.g. trying to delete a directory that contains a file that cannot be removed], some of the contents of the directory may be deleted. It is an error to attempt to delete the root directory of a filesystem.
    */
-  removeRecursively(): void;
+  removeRecursively(): Promise<void>;
 }
 
 /**
@@ -548,24 +550,24 @@ export interface DirectoryEntrySync extends EntrySync {
  * <li> The entries produced by readEntries must not include the directory itself ["."] or its parent [".."].</li>
  * </ul>
  */
-export interface DirectoryReaderSync {
+export interface DirectoryReaderAsync {
   /**
    * Read the next block of entries from this directory.
    */
-  readEntries(): EntrySync[];
+  readEntries(): Promise<EntryAsync[]>;
 }
 
 /**
  * This interface represents a file on a file system.
  */
-export interface FileEntrySync extends EntrySync {
+export interface FileEntryAsync extends EntryAsync {
   /**
    * Creates a new FileWriterSync associated with the file that this FileEntrySync represents.
    */
-  createWriter(): FileWriterSync;
+  createWriter(): Promise<FileWriter>;
 
   /**
    * Returns a File that represents the current state of the file that this FileEntrySync represents.
    */
-  file(): File;
+  file(): Promise<File>;
 }
