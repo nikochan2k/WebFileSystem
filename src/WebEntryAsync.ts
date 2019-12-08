@@ -1,5 +1,4 @@
-import { WebDirectoryEntryAsync } from "./WebDirectoryEntryAsync";
-import { WebFileEntryAsync } from "./WebFileEntryAsync";
+import { createEntry } from "./WebFileSystemAsyncUtil";
 import {
   DirectoryEntryAsync,
   Entry,
@@ -7,12 +6,7 @@ import {
   FileSystemAsync,
   Metadata
 } from "./filesystem";
-
-export function createEntry(fileSystemAsync: FileSystemAsync, entry: Entry) {
-  return entry.isFile
-    ? new WebFileEntryAsync(fileSystemAsync, entry as FileEntry)
-    : new WebDirectoryEntryAsync(this.fileSystemAsync, entry as DirectoryEntry);
-}
+import { WebDirectoryEntryAsync } from "./WebDirectoryEntryAsync";
 
 export abstract class WebEntryAsync implements EntryAsync {
   constructor(
@@ -20,8 +14,12 @@ export abstract class WebEntryAsync implements EntryAsync {
     protected entry: Entry
   ) {}
 
-  abstract isFile: boolean;
-  abstract isDirectory: boolean;
+  get isFile() {
+    return this.entry.isFile;
+  }
+  get isDirectory() {
+    return this.entry.isDirectory;
+  }
   get name() {
     return this.entry.name;
   }

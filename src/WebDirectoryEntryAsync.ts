@@ -14,15 +14,9 @@ export class WebDirectoryEntryAsync extends WebEntryAsync
   implements DirectoryEntryAsync {
   constructor(
     fileSystemAsync: FileSystemAsync,
-    directoryEntry: DirectoryEntry
+    public directoryEntry: DirectoryEntry
   ) {
     super(fileSystemAsync, directoryEntry);
-  }
-
-  isFile = false;
-  isDirectory = true;
-  private get directoryEntry() {
-    return this.entry as DirectoryEntry;
   }
 
   createReader(): DirectoryReaderAsync {

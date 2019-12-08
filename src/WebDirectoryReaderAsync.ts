@@ -1,4 +1,4 @@
-import { createEntry } from "./WebEntryAsync";
+import { createEntry } from "./WebFileSystemAsyncUtil";
 import {
   DirectoryReaderAsync,
   EntryAsync,

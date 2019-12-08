@@ -2,15 +2,19 @@ import {
   EntryCallback,
   ErrorCallback,
   FileSystemCallback,
-  LocalFileSystem
+  FileSystemFactory
 } from "../filesystem";
 import { Idb } from "./Idb";
 import { NOT_IMPLEMENTED_ERR } from "../FileError";
 import { onError } from "./IdbUtil";
 
-export class IdbGlobal implements LocalFileSystem {
-  readonly TEMPORARY = 0;
-  readonly PERSISTENT = 1;
+export class IdbFileSystemFactory implements FileSystemFactory {
+  get TEMPORARY() {
+    return window.TEMPORARY;
+  }
+  get PERSISTENT() {
+    return window.PERSISTENT;
+  }
 
   requestFileSystem(
     type: number,

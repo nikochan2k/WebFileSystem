@@ -2,12 +2,12 @@ import {
   EntryCallback,
   ErrorCallback,
   FileSystemCallback,
-  LocalFileSystem
+  FileSystemFactory
 } from "./filesystem";
-import { IdbGlobal } from "./idb/IdbGlobal";
+import { IdbFileSystemFactory } from "./idb/IdbFileSystemFactory";
 
-export class WebFileSystemFactory implements LocalFileSystem {
-  private localFileSystem = {} as LocalFileSystem;
+export class WebFileSystemFactory implements FileSystemFactory {
+  private localFileSystem = {} as FileSystemFactory;
 
   constructor(provider?: string, options?: any) {
     if (!provider) {
@@ -23,7 +23,7 @@ export class WebFileSystemFactory implements LocalFileSystem {
         this.constructNativeFileSystem();
         return;
       case "idb":
-        this.localFileSystem = new IdbGlobal();
+        this.localFileSystem = new IdbFileSystemFactory();
         return;
     }
 

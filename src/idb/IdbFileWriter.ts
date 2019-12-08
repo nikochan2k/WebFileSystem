@@ -7,29 +7,27 @@ import { NOT_IMPLEMENTED_ERR } from "../FileError";
 import { toBase64 } from "./IdbUtil";
 
 export class IdbFileWriter implements FileWriter {
-  private blob: Blob;
   private fileEntry: IdbFileEntry;
 
   constructor(fileEntry: IdbFileEntry) {
     this.fileEntry = fileEntry;
     this.position = 0;
-    this.blob = fileEntry.blob;
   }
 
   position: number;
 
   get length() {
-    return this.blob.size;
+    return this.fileEntry.blob.size;
   }
 
   write(data: Blob): void {
     // TODO: not handling onwritestart, onprogress, onwrite, onabort. Throw an error if
     // they're defined.
 
-    if (this.blob) {
+    if (this.fileEntry.blob) {
       // Calc the head and tail fragments
-      const head = this.blob.slice(0, this.position);
-      const tail = this.blob.slice(this.position + data.size);
+      const head = this.fileEntry.blob.slice(0, this.position);
+      const tail = this.fileEntry.blob.slice(this.position + data.size);
 
       // Calc the padding
       let padding = this.position - head.size;
@@ -39,16 +37,21 @@ export class IdbFileWriter implements FileWriter {
 
       // Do the "write". In fact, a full overwrite of the Blob.
       // TODO: figure out if data.type should overwrite the exist blob's type.
-      this.blob = new Blob([head, new Uint8Array(padding), data, tail], {
-        type: this.blob.type
-      });
+      this.fileEntry.blob = new Blob(
+        [head, new Uint8Array(padding), data, tail],
+        {
+          type: this.fileEntry.blob.type
+        }
+      );
     } else {
-      this.blob = new Blob([data], { type: data.type });
+      this.fileEntry.blob = new Blob([data], { type: data.type });
     }
 
     const writeFile = (result: string | Blob | ArrayBuffer) => {
       if (result instanceof ArrayBuffer) {
-        result = new Blob([result as ArrayBuffer], { type: this.blob.type });
+        result = new Blob([result as ArrayBuffer], {
+          type: this.fileEntry.blob.type
+        });
       }
       // Blob might be a DataURI depending on browser support.
       this.fileEntry.lastModifiedDate = new Date();
@@ -77,9 +80,9 @@ export class IdbFileWriter implements FileWriter {
     };
 
     if (Idb.SUPPORTS_BLOB) {
-      writeFile(this.blob);
+      writeFile(this.fileEntry.blob);
     } else {
-      toBase64(this.blob, writeFile);
+      toBase64(this.fileEntry.blob, writeFile);
     }
   }
 
@@ -94,21 +97,24 @@ export class IdbFileWriter implements FileWriter {
   }
 
   truncate(size: number): void {
-    if (this.blob) {
+    if (this.fileEntry.blob) {
       if (size < this.length) {
-        this.blob = this.blob.slice(0, size);
+        this.fileEntry.blob = this.fileEntry.blob.slice(0, size);
       } else {
-        this.blob = new Blob([this.blob, new Uint8Array(size - this.length)], {
-          type: this.blob.type
-        });
+        this.fileEntry.blob = new Blob(
+          [this.fileEntry.blob, new Uint8Array(size - this.length)],
+          {
+            type: this.fileEntry.blob.type
+          }
+        );
       }
     } else {
-      this.blob = new Blob([], DEFAULT_BLOB_PROPS);
+      this.fileEntry.blob = new Blob([], DEFAULT_BLOB_PROPS);
     }
 
     this.position = 0; // truncate from beginning of file.
 
-    this.write(this.blob); // calls onwritestart and onwriteend.
+    this.write(this.fileEntry.blob); // calls onwritestart and onwriteend.
   }
 
   abort(): void {

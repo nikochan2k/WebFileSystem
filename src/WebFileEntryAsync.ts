@@ -3,14 +3,8 @@ import { FileWriter } from "./filewriter";
 import { WebEntryAsync } from "./WebEntryAsync";
 
 export class WebFileEntryAsync extends WebEntryAsync implements FileEntryAsync {
-  constructor(fileSystemAsync: FileSystemAsync, fileEntry: FileEntry) {
+  constructor(fileSystemAsync: FileSystemAsync, public fileEntry: FileEntry) {
     super(fileSystemAsync, fileEntry);
-  }
-
-  isFile = true;
-  isDirectory = false;
-  private get fileEntry() {
-    return this.entry as FileEntry;
   }
 
   createWriter(): Promise<FileWriter> {
