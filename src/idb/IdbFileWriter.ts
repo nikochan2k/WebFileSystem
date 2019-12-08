@@ -1,6 +1,6 @@
 import { DEFAULT_BLOB_PROPS } from "./IdbConstants";
 import { FileWriter } from "../filewriter";
-import { IDB_SUPPORTS_BLOB } from "./IdbLocalFileSystem";
+import { Idb } from "./Idb";
 import { IdbFileEntry } from "./IdbFileEntry";
 import { IdbObject } from "./IdbObject";
 import { NOT_IMPLEMENTED_ERR } from "../FileError";
@@ -76,7 +76,7 @@ export class IdbFileWriter implements FileWriter {
         });
     };
 
-    if (IDB_SUPPORTS_BLOB) {
+    if (Idb.SUPPORTS_BLOB) {
       writeFile(this.blob);
     } else {
       toBase64(this.blob, writeFile);

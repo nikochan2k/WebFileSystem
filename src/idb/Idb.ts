@@ -1,5 +1,4 @@
 import { DIR_OPEN_BOUND, DIR_SEPARATOR } from "./IdbConstants";
-import { IDB_SUPPORTS_BLOB } from "./IdbLocalFileSystem";
 import { IdbDirectoryEntry } from "./IdbDirectoryEntry";
 import { IdbEntry } from "./IdbEntry";
 import { IdbFileEntry } from "./IdbFileEntry";
@@ -9,7 +8,15 @@ import { toBlob } from "./IdbUtil";
 
 const FILE_STORE = "entries";
 
+const indexedDB: IDBFactory =
+  window.indexedDB ||
+  (window as any).mozIndexedDB ||
+  (window as any).msIndexedDB;
+
 export class Idb {
+  static SUPPORTS_BLOB = true;
+
+  private initialized = false;
   private db: IDBDatabase;
   storageType: string;
   filesystem: IdbFileSystem;
@@ -23,9 +30,44 @@ export class Idb {
     console.error(ev);
   }
 
-  async open(dbName: string) {
-    const self = this;
+  initialize() {
+    return new Promise((resolve, reject) => {
+      const dbName = "blob-support";
+      indexedDB.deleteDatabase(dbName).onsuccess = function() {
+        const request = indexedDB.open(dbName, 1);
+        request.onupgradeneeded = function() {
+          request.result.createObjectStore("store");
+        };
+        request.onerror = function() {
+          Idb.SUPPORTS_BLOB = false;
+          resolve();
+        };
+        request.onsuccess = function() {
+          const db = request.result;
+          try {
+            const blob = new Blob(["test"], { type: "text/plain" });
+            const transaction = db.transaction("store", "readwrite");
+            transaction.objectStore("store").put(blob, "key");
+            Idb.SUPPORTS_BLOB = true;
+          } catch (err) {
+            Idb.SUPPORTS_BLOB = false;
+          } finally {
+            db.close();
+            indexedDB.deleteDatabase(dbName);
+          }
+          resolve();
+        };
+      };
+    });
+  }
 
+  async open(dbName: string) {
+    if (!this.initialized) {
+      await this.initialize();
+      this.initialized = true;
+    }
+
+    const self = this;
     return new Promise<void>((resolve, reject) => {
       // TODO: FF 12.0a1 isn't liking a db name with : in it.
       const request = indexedDB.open(
@@ -47,7 +89,6 @@ export class Idb {
         }
       };
       request.onsuccess = function(e) {
-        console.log("onsuccess");
         self.db = (e.target as IDBRequest).result;
         self.db.onerror = self.onError;
         resolve();
@@ -84,7 +125,6 @@ export class Idb {
   }
 
   get(fullPath: string) {
-    console.log(fullPath);
     return new Promise<IdbObject>((resolve, reject) => {
       const tx = this.db.transaction([FILE_STORE], "readonly");
       //const request = tx.objectStore(FILE_STORE_).get(fullPath);
@@ -170,7 +210,7 @@ export class Idb {
                   name: obj.name,
                   fullPath: obj.fullPath,
                   lastModifiedDate: new Date(obj.lastModified),
-                  blob: IDB_SUPPORTS_BLOB
+                  blob: Idb.SUPPORTS_BLOB
                     ? (obj.content as Blob)
                     : toBlob(obj.content as string)
                 })

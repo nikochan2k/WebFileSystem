@@ -11,7 +11,8 @@ export class IdbFileSystem implements FileSystem {
     this.root = new IdbDirectoryEntry({
       filesystem: this,
       name: "",
-      fullPath: DIR_SEPARATOR
+      fullPath: DIR_SEPARATOR,
+      lastModifiedDate: null
     });
   }
 }

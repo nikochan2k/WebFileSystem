@@ -6,14 +6,14 @@ import {
   Flags,
   MetadataCallback
 } from "../filesystem";
-import { IDB_SUPPORTS_BLOB } from "./IdbLocalFileSystem";
+import { Idb } from "./Idb";
 import { IdbDirectoryReader } from "./IdbDirectoryReader";
 import { IdbEntry } from "./IdbEntry";
 import { IdbFileEntry } from "./IdbFileEntry";
 import { IdbObject } from "./IdbObject";
 import { IdbParams } from "./IdbParams";
 import { INVALID_MODIFICATION_ERR, NOT_FOUND_ERR } from "../FileError";
-import { toBlob, onError } from "./IdbUtil";
+import { onError, toBlob } from "./IdbUtil";
 
 function resolveToFullPath(cwdFullPath: string, path: string) {
   let fullPath = path;
@@ -96,12 +96,15 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
               name: path.split(DIR_SEPARATOR).pop(),
               fullPath: path,
               lastModified: Date.now(),
-              content: IDB_SUPPORTS_BLOB ? EMPTY_BLOB : ""
+              content: Idb.SUPPORTS_BLOB ? EMPTY_BLOB : ""
             };
 
             idb
               .put(newObj)
               .then(() => {
+                if (!successCallback) {
+                  return;
+                }
                 successCallback(
                   new IdbFileEntry({
                     filesystem: this.filesystem,
@@ -117,6 +120,9 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
               });
           } else if (obj) {
             if (obj.isFile) {
+              if (!successCallback) {
+                return;
+              }
               // IDB won't save methods, so we need re-create the FileEntry.
               successCallback(
                 new IdbFileEntry({
@@ -124,7 +130,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
                   name: obj.name,
                   fullPath: obj.fullPath,
                   lastModifiedDate: new Date(),
-                  blob: IDB_SUPPORTS_BLOB
+                  blob: Idb.SUPPORTS_BLOB
                     ? (obj.content as Blob)
                     : toBlob(obj.content as string)
                 })
@@ -142,6 +148,10 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
             // must fail.
             onError(INVALID_MODIFICATION_ERR, errorCallback);
           } else {
+            if (!successCallback) {
+              return;
+            }
+
             // Otherwise, if no other error occurs, getFile must return a FileEntry
             // corresponding to path.
 
@@ -152,7 +162,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
                 name: obj.name,
                 fullPath: obj.fullPath,
                 lastModifiedDate: new Date(obj.lastModified),
-                blob: IDB_SUPPORTS_BLOB
+                blob: Idb.SUPPORTS_BLOB
                   ? (obj.content as Blob)
                   : toBlob(obj.content as string)
               })
@@ -216,6 +226,10 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
               });
           } else if (obj) {
             if (obj.isDirectory) {
+              if (!successCallback) {
+                return;
+              }
+
               // IDB won't save methods, so we need re-create the DirectoryEntry.
               successCallback(
                 new IdbDirectoryEntry({
@@ -233,15 +247,18 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
           if (!obj) {
             // Handle root special. It should always exist.
             if (path == DIR_SEPARATOR) {
+              if (!successCallback) {
+                return;
+              }
+
               successCallback(
                 new IdbDirectoryEntry({
                   filesystem: this.filesystem,
                   name: "",
                   fullPath: DIR_SEPARATOR,
-                  lastModifiedDate: new Date()
+                  lastModifiedDate: null
                 })
               );
-              return;
             }
 
             // If create is not true and the path doesn't exist, getDirectory must fail.
@@ -251,6 +268,10 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
             // must fail.
             onError(INVALID_MODIFICATION_ERR, errorCallback);
           } else {
+            if (!successCallback) {
+              return;
+            }
+
             // Otherwise, if no other error occurs, getDirectory must return a
             // DirectoryEntry corresponding to path.
 
