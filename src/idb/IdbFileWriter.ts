@@ -7,14 +7,9 @@ import { NOT_IMPLEMENTED_ERR } from "../FileError";
 import { toBase64 } from "./IdbUtil";
 
 export class IdbFileWriter implements FileWriter {
-  private fileEntry: IdbFileEntry;
+  constructor(private fileEntry: IdbFileEntry) {}
 
-  constructor(fileEntry: IdbFileEntry) {
-    this.fileEntry = fileEntry;
-    this.position = 0;
-  }
-
-  position: number;
+  position = 0;
 
   get length() {
     return this.fileEntry.blob.size;
@@ -71,7 +66,12 @@ export class IdbFileWriter implements FileWriter {
           this.position += data.size;
 
           if (this.onwriteend) {
-            this.onwriteend(null); // TODO
+            const evt: ProgressEvent<EventTarget> = {
+              loaded: this.position,
+              total: this.length,
+              lengthComputable: true
+            } as any;
+            this.onwriteend(evt);
           }
         })
         .catch(err => {

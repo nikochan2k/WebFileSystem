@@ -1,4 +1,4 @@
-import { FileWriter } from "./filewriter";
+import { FileWriter, FileWriterAsync } from "./filewriter";
 
 // Type definitions for File System API
 // Project: http://www.w3.org/TR/file-system-api/
@@ -564,7 +564,7 @@ export interface FileEntryAsync extends EntryAsync {
   /**
    * Creates a new FileWriterSync associated with the file that this FileEntrySync represents.
    */
-  createWriter(): Promise<FileWriter>;
+  createWriter(): Promise<FileWriterAsync>;
 
   /**
    * Returns a File that represents the current state of the file that this FileEntrySync represents.

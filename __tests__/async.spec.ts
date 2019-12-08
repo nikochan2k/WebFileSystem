@@ -31,10 +31,14 @@ test("add text file", async done => {
   expect(fileEntry.isFile).toBe(true);
 
   const writer = await fileEntry.createWriter();
-  writer.write(new Blob(["test"], { type: "text/plain" }));
+  await writer.write(new Blob(["hoge"], { type: "text/plain" }));
 
-  const file = await fileEntry.file();
+  let file = await fileEntry.file();
   expect(file.size).toBe(4);
+
+  await writer.write(new Blob(["fuga"], { type: "text/plain" }));
+  file = await fileEntry.file();
+  expect(file.size).toBe(8);
 
   done();
 });
