@@ -1,10 +1,10 @@
+import { base64ToFile, blobToFile } from "./IdbUtil";
 import { DIR_OPEN_BOUND, DIR_SEPARATOR } from "./IdbConstants";
 import { IdbDirectoryEntry } from "./IdbDirectoryEntry";
 import { IdbEntry } from "./IdbEntry";
 import { IdbFileEntry } from "./IdbFileEntry";
 import { IdbFileSystem } from "./IdbFileSystem";
 import { IdbObject } from "./IdbObject";
-import { toBlob } from "./IdbUtil";
 
 const FILE_STORE = "entries";
 
@@ -208,9 +208,17 @@ export class Idb {
                   name: obj.name,
                   fullPath: obj.fullPath,
                   lastModifiedDate: new Date(obj.lastModified),
-                  blob: Idb.SUPPORTS_BLOB
-                    ? (obj.content as Blob)
-                    : toBlob(obj.content as string)
+                  file: Idb.SUPPORTS_BLOB
+                    ? blobToFile(
+                        [obj.content as Blob],
+                        obj.name,
+                        obj.lastModified
+                      )
+                    : base64ToFile(
+                        obj.content as string,
+                        obj.name,
+                        obj.lastModified
+                      )
                 })
               : new IdbDirectoryEntry({
                   filesystem: filesystem,

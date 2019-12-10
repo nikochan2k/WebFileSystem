@@ -1,3 +1,4 @@
+import { base64ToFile, blobToFile, createEmptyFile, onError } from "./IdbUtil";
 import { DIR_SEPARATOR, EMPTY_BLOB } from "./IdbConstants";
 import {
   DirectoryEntry,
@@ -13,7 +14,6 @@ import { IdbFileEntry } from "./IdbFileEntry";
 import { IdbObject } from "./IdbObject";
 import { IdbParams } from "./IdbParams";
 import { INVALID_MODIFICATION_ERR, NOT_FOUND_ERR } from "../FileError";
-import { onError, toBlob } from "./IdbUtil";
 
 function resolveToFullPath(cwdFullPath: string, path: string) {
   let fullPath = path;
@@ -111,7 +111,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
                     name: newObj.name,
                     fullPath: newObj.fullPath,
                     lastModifiedDate: new Date(newObj.lastModified),
-                    blob: EMPTY_BLOB
+                    file: createEmptyFile(newObj.name)
                   })
                 );
               })
@@ -130,9 +130,17 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
                   name: obj.name,
                   fullPath: obj.fullPath,
                   lastModifiedDate: new Date(),
-                  blob: Idb.SUPPORTS_BLOB
-                    ? (obj.content as Blob)
-                    : toBlob(obj.content as string)
+                  file: Idb.SUPPORTS_BLOB
+                    ? blobToFile(
+                        [obj.content as Blob],
+                        obj.name,
+                        obj.lastModified
+                      )
+                    : base64ToFile(
+                        obj.content as string,
+                        obj.name,
+                        obj.lastModified
+                      )
                 })
               );
             } else {
@@ -162,9 +170,17 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
                 name: obj.name,
                 fullPath: obj.fullPath,
                 lastModifiedDate: new Date(obj.lastModified),
-                blob: Idb.SUPPORTS_BLOB
-                  ? (obj.content as Blob)
-                  : toBlob(obj.content as string)
+                file: Idb.SUPPORTS_BLOB
+                  ? blobToFile(
+                      [obj.content as Blob],
+                      obj.name,
+                      obj.lastModified
+                    )
+                  : base64ToFile(
+                      obj.content as string,
+                      obj.name,
+                      obj.lastModified
+                    )
               })
             );
           }

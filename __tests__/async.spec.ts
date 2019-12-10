@@ -40,5 +40,15 @@ test("add text file", async done => {
   file = await fileEntry.file();
   expect(file.size).toBe(8);
 
+  const reader = new FileReader();
+  const str = await new Promise<string>(resolve => {
+    reader.addEventListener("loadend", e => {
+      const text = (e.srcElement as any).result;
+      resolve(text);
+    });
+    reader.readAsText(file);
+  });
+  expect(str).toBe("hogefuga");
+
   done();
 });

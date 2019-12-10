@@ -1,13 +1,39 @@
-import { DEFAULT_BLOB_PROPS } from "./IdbConstants";
 import { ErrorCallback } from "../filesystem";
+import { IdbObject } from "./IdbObject";
 
-export function toBlob(base64: string) {
-  const buffer = new Uint8Array(base64.length);
+export function blobToFile(
+  fileBits: BlobPart[],
+  name: string,
+  lastModified: number
+) {
+  const file = new File(fileBits, name, {
+    lastModified: lastModified,
+    type: "application/octet-stream"
+  });
+  return file;
+}
+
+export function base64ToFile(
+  base64: string,
+  name: string,
+  lastModified: number
+) {
+  const array = new Uint8Array(base64.length);
   for (let i = 0; i < base64.length; i++) {
-    buffer[i] = base64.charCodeAt(i);
+    array[i] = base64.charCodeAt(i);
   }
-  const blob = new Blob([buffer.buffer], DEFAULT_BLOB_PROPS);
-  return blob;
+  const file = new File([array.buffer], name, {
+    lastModified: lastModified,
+    type: "application/octet-stream"
+  });
+  return file;
+}
+
+export function createEmptyFile(name: string) {
+  return new File([], name, {
+    lastModified: Date.now(),
+    type: "application/octet-stream"
+  });
 }
 
 export function toBase64(

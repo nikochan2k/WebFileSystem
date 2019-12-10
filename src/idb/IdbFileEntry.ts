@@ -10,19 +10,17 @@ import { IdbFileWriter } from "./IdbFileWriter";
 import { IdbParams } from "./IdbParams";
 
 interface IdbFileParams extends IdbParams {
-  blob: Blob;
+  file: File;
 }
 
 export class IdbFileEntry extends IdbEntry implements FileEntry {
   isFile = true;
   isDirectory = false;
-  lastModifiedDate: Date;
-  blob: Blob;
+  file_: File;
 
   constructor(params: IdbFileParams) {
     super(params);
-    this.lastModifiedDate = params.lastModifiedDate;
-    this.blob = params.blob;
+    this.file_ = params.file;
   }
 
   createWriter(
@@ -36,13 +34,7 @@ export class IdbFileEntry extends IdbEntry implements FileEntry {
     successCallback: FileCallback,
     errorCallback?: ErrorCallback | undefined
   ): void {
-    successCallback({
-      name: this.name,
-      lastModified: this.lastModifiedDate.getTime(),
-      size: this.blob.size,
-      type: this.blob.type,
-      slice: this.blob.slice
-    });
+    successCallback(this.file_);
   }
 
   getMetadata(
@@ -50,8 +42,8 @@ export class IdbFileEntry extends IdbEntry implements FileEntry {
     errorCallback?: ErrorCallback
   ): void {
     successCallback({
-      modificationTime: this.lastModifiedDate,
-      size: this.blob.size
+      modificationTime: new Date(this.file_.lastModified),
+      size: this.file_.size
     });
   }
 }
