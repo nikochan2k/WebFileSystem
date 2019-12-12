@@ -43,6 +43,7 @@
     "webpack-cli": "^3.3.10"
   },
   "dependencies": {
+    "aws-sdk": "^2.588.0",
     "idb.filesystem.js": "^0.0.8"
   }
 }

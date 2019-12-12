@@ -7,7 +7,10 @@ import { NOT_FOUND_ERR } from "../src/FileError";
 let fs: FileSystemAsync;
 beforeAll(async () => {
   const factory = new WebFileSystemAsyncFactory();
-  fs = await factory.requestFileSystemAsync(window.TEMPORARY, Number.MAX_VALUE);
+  fs = await factory.requestFileSystemAsync(
+    window.PERSISTENT,
+    Number.MAX_VALUE
+  );
 });
 
 test("add empty file", async done => {

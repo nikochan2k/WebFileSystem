@@ -78,14 +78,6 @@ export abstract class IdbEntry implements Entry {
   }
 
   toURL(): string {
-    const origin = location.protocol + "//" + location.host;
-
-    return (
-      "filesystem:" +
-      origin +
-      DIR_SEPARATOR +
-      this.filesystem.idb.storageType.toLowerCase() +
-      this.fullPath
-    );
+    return `filesystem:${location.protocol}:${location.host}:${location.port}${DIR_SEPARATOR}${this.fullPath}`;
   }
 }

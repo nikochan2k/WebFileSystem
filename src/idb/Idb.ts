@@ -20,7 +20,7 @@ export class Idb {
   private db: IDBDatabase;
   filesystem: IdbFileSystem;
 
-  constructor(public storageType: string) {
+  constructor() {
     this.filesystem = new IdbFileSystem(this);
   }
 

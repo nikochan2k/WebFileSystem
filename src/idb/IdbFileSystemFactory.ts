@@ -7,27 +7,20 @@ import {
 import { Idb } from "./Idb";
 import { NOT_IMPLEMENTED_ERR } from "../FileError";
 import { onError } from "./IdbUtil";
+import { AbstractFileSystemFactory } from "../AbstractFileSystemFactory";
 
-export class IdbFileSystemFactory implements FileSystemFactory {
-  get TEMPORARY() {
-    return window.TEMPORARY;
-  }
-  get PERSISTENT() {
-    return window.PERSISTENT;
-  }
-
+export class IdbFileSystemFactory extends AbstractFileSystemFactory {
   requestFileSystem(
     type: number,
     size: number,
     successCallback: FileSystemCallback,
     errorCallback?: ErrorCallback | undefined
   ): void {
-    const storageType = type === this.TEMPORARY ? "Temporary" : "Persistent";
-    const dbName =
-      (location.protocol + location.host).replace(/:/g, "_") +
-      ":" +
-      storageType;
-    const idb = new Idb(storageType);
+    if (type === this.TEMPORARY) {
+      throw new Error("No temporary storage");
+    }
+    const dbName = `${location.protocol}_${location.host}_${location.port}`;
+    const idb = new Idb();
     idb
       .open(dbName)
       .then(() => {
