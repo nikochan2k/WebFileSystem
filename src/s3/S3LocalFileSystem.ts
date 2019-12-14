@@ -1,4 +1,4 @@
-import { AbstractLocalFileSystem } from "../AbstractFileSystemFactory";
+import { AbstractLocalFileSystem } from "../AbstractLocalFileSystem";
 
 export class S3LocalFileSystem extends AbstractLocalFileSystem {
   requestFileSystem(

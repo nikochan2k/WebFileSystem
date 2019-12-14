@@ -7,7 +7,7 @@ import {
 import { Idb } from "./Idb";
 import { NOT_IMPLEMENTED_ERR } from "../FileError";
 import { onError } from "./IdbUtil";
-import { AbstractLocalFileSystem } from "../AbstractFileSystemFactory";
+import { AbstractLocalFileSystem } from "../AbstractLocalFileSystem";
 
 export class IdbLocalFileSystem extends AbstractLocalFileSystem {
   requestFileSystem(
