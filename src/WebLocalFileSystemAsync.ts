@@ -1,18 +1,18 @@
 import {
   EntryAsync,
   FileSystemAsync,
-  FileSystemAsyncFactory
+  LocalFileSystemAsync
 } from "./filesystem";
 import { NOT_IMPLEMENTED_ERR } from "./FileError";
 import { WebFileSystemAsync } from "./WebFileSystemAsync";
-import { WebFileSystemFactory } from "./WebFileSystemFactory";
+import { WebLocalFileSystem } from "./WebLocalFileSystem";
 
-export class WebFileSystemAsyncFactory implements FileSystemAsyncFactory {
+export class WebFileSystemAsyncFactory implements LocalFileSystemAsync {
   constructor(provider?: string, options?: any) {
-    this.fileSystemFactory = new WebFileSystemFactory(provider, options);
+    this.fileSystemFactory = new WebLocalFileSystem(provider, options);
   }
 
-  private fileSystemFactory: WebFileSystemFactory;
+  private fileSystemFactory: WebLocalFileSystem;
 
   get TEMPORARY() {
     return window.TEMPORARY;

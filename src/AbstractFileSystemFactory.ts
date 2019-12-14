@@ -1,6 +1,6 @@
-import { FileSystemFactory } from "./filesystem";
+import { LocalFileSystem } from "./filesystem";
 
-export abstract class AbstractFileSystemFactory implements FileSystemFactory {
+export abstract class AbstractLocalFileSystem implements LocalFileSystem {
   get TEMPORARY() {
     return window.TEMPORARY;
   }

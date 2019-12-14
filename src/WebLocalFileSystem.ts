@@ -2,7 +2,7 @@ import {
   EntryCallback,
   ErrorCallback,
   FileSystemCallback,
-  FileSystemFactory
+  LocalFileSystem
 } from "./filesystem";
 import { IdbFileSystemFactory } from "./idb/IdbFileSystemFactory";
 
@@ -13,8 +13,8 @@ if (window.PERSISTENT == null) {
   window.PERSISTENT = 1;
 }
 
-export class WebFileSystemFactory implements FileSystemFactory {
-  private localFileSystem = {} as FileSystemFactory;
+export class WebLocalFileSystem implements LocalFileSystem {
+  private localFileSystem = {} as LocalFileSystem;
 
   constructor(provider?: string, options?: any) {
     if (!provider) {

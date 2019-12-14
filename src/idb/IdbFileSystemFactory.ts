@@ -2,14 +2,14 @@ import {
   EntryCallback,
   ErrorCallback,
   FileSystemCallback,
-  FileSystemFactory
+  LocalFileSystem
 } from "../filesystem";
 import { Idb } from "./Idb";
 import { NOT_IMPLEMENTED_ERR } from "../FileError";
 import { onError } from "./IdbUtil";
-import { AbstractFileSystemFactory } from "../AbstractFileSystemFactory";
+import { AbstractLocalFileSystem } from "../AbstractFileSystemFactory";
 
-export class IdbFileSystemFactory extends AbstractFileSystemFactory {
+export class IdbFileSystemFactory extends AbstractLocalFileSystem {
   requestFileSystem(
     type: number,
     size: number,

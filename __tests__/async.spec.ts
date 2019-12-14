@@ -1,6 +1,6 @@
 require("fake-indexeddb/auto");
 
-import { WebFileSystemAsyncFactory } from "../src/WebFileSystemAsyncFactory";
+import { WebFileSystemAsyncFactory } from "../src/WebLocalFileSystemAsync";
 import { FileSystemAsync } from "../src/filesystem";
 import { NOT_FOUND_ERR } from "../src/FileError";
 

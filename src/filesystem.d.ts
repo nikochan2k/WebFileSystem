@@ -5,7 +5,7 @@ import { FileWriter, FileWriterAsync } from "./filewriter";
 // Definitions by: Kon <http://phyzkit.net/>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
-export interface FileSystemFactory {
+export interface LocalFileSystem {
   /**
    * Used for storage with no guarantee of persistence.
    */
@@ -43,7 +43,7 @@ export interface FileSystemFactory {
   ): void;
 }
 
-export interface FileSystemAsyncFactory {
+export interface LocalFileSystemAsync {
   /**
    * Used for storage with no guarantee of persistence.
    */
