@@ -9,7 +9,7 @@ import { NOT_IMPLEMENTED_ERR } from "../FileError";
 import { onError } from "./IdbUtil";
 import { AbstractLocalFileSystem } from "../AbstractFileSystemFactory";
 
-export class IdbFileSystemFactory extends AbstractLocalFileSystem {
+export class IdbLocalFileSystem extends AbstractLocalFileSystem {
   requestFileSystem(
     type: number,
     size: number,

@@ -4,7 +4,7 @@ import {
   FileSystemCallback,
   LocalFileSystem
 } from "./filesystem";
-import { IdbFileSystemFactory } from "./idb/IdbFileSystemFactory";
+import { IdbLocalFileSystem } from "./idb/IdbLocalFileSystem";
 
 if (window.TEMPORARY == null) {
   window.TEMPORARY = 0;
@@ -30,7 +30,7 @@ export class WebLocalFileSystem implements LocalFileSystem {
         this.constructNativeFileSystem();
         return;
       case "idb":
-        this.localFileSystem = new IdbFileSystemFactory();
+        this.localFileSystem = new IdbLocalFileSystem();
         return;
     }
 
