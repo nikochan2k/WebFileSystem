@@ -16,7 +16,7 @@ if (window.PERSISTENT == null) {
 export class WebLocalFileSystem implements LocalFileSystem {
   private localFileSystem = {} as LocalFileSystem;
 
-  constructor(provider?: string, options?: any) {
+  constructor(bucket: string, provider?: string, options?: any) {
     if (!provider) {
       this.constructNativeFileSystem();
       if (this.localFileSystem.requestFileSystem) {
@@ -30,7 +30,7 @@ export class WebLocalFileSystem implements LocalFileSystem {
         this.constructNativeFileSystem();
         return;
       case "idb":
-        this.localFileSystem = new IdbLocalFileSystem();
+        this.localFileSystem = new IdbLocalFileSystem(bucket);
         return;
     }
 

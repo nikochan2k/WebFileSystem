@@ -1,12 +1,12 @@
 require("fake-indexeddb/auto");
 
-import { WebFileSystemAsyncFactory } from "../src/WebLocalFileSystemAsync";
+import { WebLocalFileSystemAsync } from "../src/WebLocalFileSystemAsync";
 import { FileSystemAsync } from "../src/filesystem";
 import { NOT_FOUND_ERR } from "../src/FileError";
 
 let fs: FileSystemAsync;
 beforeAll(async () => {
-  const factory = new WebFileSystemAsyncFactory();
+  const factory = new WebLocalFileSystemAsync("test");
   fs = await factory.requestFileSystemAsync(
     window.PERSISTENT,
     Number.MAX_VALUE

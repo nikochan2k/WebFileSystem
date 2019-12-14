@@ -7,9 +7,9 @@ import { NOT_IMPLEMENTED_ERR } from "./FileError";
 import { WebFileSystemAsync } from "./WebFileSystemAsync";
 import { WebLocalFileSystem } from "./WebLocalFileSystem";
 
-export class WebFileSystemAsyncFactory implements LocalFileSystemAsync {
-  constructor(provider?: string, options?: any) {
-    this.fileSystemFactory = new WebLocalFileSystem(provider, options);
+export class WebLocalFileSystemAsync implements LocalFileSystemAsync {
+  constructor(bucket: string, provider?: string, options?: any) {
+    this.fileSystemFactory = new WebLocalFileSystem(bucket, provider, options);
   }
 
   private fileSystemFactory: WebLocalFileSystem;

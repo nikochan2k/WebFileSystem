@@ -19,10 +19,9 @@ export class IdbLocalFileSystem extends AbstractLocalFileSystem {
     if (type === this.TEMPORARY) {
       throw new Error("No temporary storage");
     }
-    const dbName = `${location.protocol}_${location.host}_${location.port}`;
     const idb = new Idb();
     idb
-      .open(dbName)
+      .open(this.bucket)
       .then(() => {
         successCallback(idb.filesystem);
       })

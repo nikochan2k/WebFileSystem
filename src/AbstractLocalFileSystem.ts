@@ -1,6 +1,8 @@
 import { LocalFileSystem } from "./filesystem";
 
 export abstract class AbstractLocalFileSystem implements LocalFileSystem {
+  constructor(public bucket: string) {}
+
   get TEMPORARY() {
     return window.TEMPORARY;
   }
