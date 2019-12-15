@@ -83,10 +83,21 @@ export function toBase64(
   onload: (result: string | Blob | ArrayBuffer) => void
 ) {
   const reader = new FileReader();
-  reader.readAsDataURL(blob);
   reader.onloadend = function() {
     onload(reader.result);
   };
+  reader.readAsDataURL(blob);
+}
+
+export function toArrayBuffer(
+  blob: Blob,
+  onload: (result: ArrayBuffer) => void
+) {
+  const reader = new FileReader();
+  reader.onloadend = function() {
+    onload(reader.result as ArrayBuffer);
+  };
+  reader.readAsArrayBuffer(blob);
 }
 
 export function onError(err: DOMError, errorCallback?: ErrorCallback) {

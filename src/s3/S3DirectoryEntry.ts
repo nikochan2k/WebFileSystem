@@ -1,4 +1,8 @@
-import { DIR_SEPARATOR, EMPTY_ARRAY_BUFFER } from "../WebFileSystemConstants";
+import {
+  DIR_SEPARATOR,
+  EMPTY_ARRAY_BUFFER,
+  EMPTY_BLOB
+} from "../WebFileSystemConstants";
 import {
   DirectoryEntry,
   DirectoryEntryCallback,
@@ -13,6 +17,7 @@ import { resolveToFullPath } from "../WebFileSystemUtil";
 import { S3DirectoryReader } from "./S3DirectoryReader";
 import { S3Entry } from "./S3Entry";
 import { S3FileEntry } from "./S3FileEntry";
+import { PutObjectRequest } from "aws-sdk/clients/s3";
 
 export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
   isFile = false;
@@ -22,33 +27,19 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
     return new S3DirectoryReader(this);
   }
 
-  getFile(
-    path: string,
-    options?: Flags,
+  doGetFile(
+    key: string,
     successCallback?: FileEntryCallback,
     errorCallback?: ErrorCallback
-  ): void {
-    path = resolveToFullPath(this.fullPath, path);
+  ) {
     const filesystem = this.filesystem;
-    const key = getKey(path);
-    const name = key.split(DIR_SEPARATOR).pop();
-    if (options.create) {
-      filesystem.s3.putObject(
-        { Bucket: filesystem.bucket, Key: key, Body: EMPTY_ARRAY_BUFFER },
-        err => {
-          if (err) {
-            errorCallback(err);
-            return;
-          }
-        }
-      );
-    }
     filesystem.s3.headObject(
       { Bucket: filesystem.bucket, Key: key },
       (err, data) => {
         if (err) {
           errorCallback(err);
         } else {
+          const name = key.split(DIR_SEPARATOR).pop();
           successCallback(
             new S3FileEntry({
               filesystem: filesystem,
@@ -61,6 +52,34 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
         }
       }
     );
+  }
+
+  getFile(
+    path: string,
+    options?: Flags,
+    successCallback?: FileEntryCallback,
+    errorCallback?: ErrorCallback
+  ): void {
+    path = resolveToFullPath(this.fullPath, path);
+    const key = getKey(path);
+    if (options.create) {
+      const filesystem = this.filesystem;
+      const request: PutObjectRequest = {
+        Bucket: filesystem.bucket,
+        Key: key,
+        Body: "",
+        ContentType: "application/octet-stream"
+      };
+      filesystem.s3.putObject(request, err => {
+        if (err) {
+          errorCallback(err);
+          return;
+        }
+        this.doGetFile(key, successCallback, errorCallback);
+      });
+    } else {
+      this.doGetFile(key, successCallback, errorCallback);
+    }
   }
 
   getDirectory(

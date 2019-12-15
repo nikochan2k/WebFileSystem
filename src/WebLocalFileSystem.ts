@@ -5,6 +5,7 @@ import {
   LocalFileSystem
 } from "./filesystem";
 import { IdbLocalFileSystem } from "./idb/IdbLocalFileSystem";
+import { S3LocalFileSystem } from "./s3/S3LocalFileSystem";
 
 if (window.TEMPORARY == null) {
   window.TEMPORARY = 0;
@@ -31,6 +32,9 @@ export class WebLocalFileSystem implements LocalFileSystem {
         return;
       case "idb":
         this.localFileSystem = new IdbLocalFileSystem(bucket);
+        return;
+      case "s3":
+        this.localFileSystem = new S3LocalFileSystem(bucket, options);
         return;
     }
 
