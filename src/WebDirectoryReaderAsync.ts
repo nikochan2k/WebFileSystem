@@ -1,5 +1,6 @@
 import { createEntry } from "./WebFileSystemUtil";
 import {
+  DirectoryReader,
   DirectoryReaderAsync,
   EntryAsync,
   FileSystemAsync

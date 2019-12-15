@@ -2,6 +2,7 @@ import { DIR_SEPARATOR } from "../WebFileSystemConstants";
 import {
   DirectoryEntry,
   DirectoryEntryCallback,
+  Entry,
   EntryCallback,
   ErrorCallback,
   MetadataCallback,

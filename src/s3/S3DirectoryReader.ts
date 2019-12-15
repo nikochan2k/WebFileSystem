@@ -13,13 +13,16 @@ export class S3DirectoryReader implements DirectoryReader {
     errorCallback?: ErrorCallback
   ): void {
     const fullPath = this.dirEntry.fullPath;
-    const prefix = getPrefix(fullPath);
     const filesystem = this.dirEntry.filesystem;
     const param: AWS.S3.ListObjectsV2Request = {
       Bucket: filesystem.bucket,
-      Delimiter: DIR_SEPARATOR,
-      Prefix: prefix
+      Delimiter: DIR_SEPARATOR
     };
+    const prefix = getPrefix(fullPath);
+    if (prefix) {
+      param.Prefix = prefix;
+    }
+
     filesystem.s3.listObjectsV2(param, (err, data) => {
       if (err) {
         errorCallback(err);
@@ -31,18 +34,18 @@ export class S3DirectoryReader implements DirectoryReader {
           const newDirEntry = new S3DirectoryEntry({
             filesystem: filesystem,
             name: name,
-            fullPath: fullPath + DIR_SEPARATOR + name,
+            fullPath: (fullPath === "/" ? "" : fullPath) + DIR_SEPARATOR + name,
             lastModifiedDate: null
           });
           entries.push(newDirEntry);
         }
         for (const content of data.Contents) {
           const parts = content.Key.split(DIR_SEPARATOR);
-          const name = parts[parts.length - 2];
+          const name = parts[parts.length - 1];
           const newFileEntry = new S3FileEntry({
             filesystem: filesystem,
             name: name,
-            fullPath: fullPath + DIR_SEPARATOR + name,
+            fullPath: (fullPath === "/" ? "" : fullPath) + DIR_SEPARATOR + name,
             lastModifiedDate: content.LastModified,
             size: content.Size
           });

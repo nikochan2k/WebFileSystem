@@ -1,5 +1,11 @@
 import { DIR_SEPARATOR } from "./WebFileSystemConstants";
-import { FileSystemAsync } from "./filesystem";
+import {
+  DirectoryEntry,
+  Entry,
+  ErrorCallback,
+  FileEntry,
+  FileSystemAsync
+} from "./filesystem";
 import { WebDirectoryEntryAsync } from "./WebDirectoryEntryAsync";
 import { WebFileEntryAsync } from "./WebFileEntryAsync";
 

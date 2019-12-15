@@ -9,6 +9,9 @@ export function getKey(fullPath: string) {
 }
 
 export function getPrefix(fullPath: string) {
-  const key = getKey(fullPath);
-  return key + DIR_SEPARATOR;
+  let key = getKey(fullPath);
+  if (key) {
+    key += DIR_SEPARATOR;
+  }
+  return key;
 }

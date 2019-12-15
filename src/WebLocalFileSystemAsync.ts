@@ -15,11 +15,11 @@ export class WebLocalFileSystemAsync implements LocalFileSystemAsync {
   private fileSystemFactory: WebLocalFileSystem;
 
   get TEMPORARY() {
-    return window.TEMPORARY;
+    return (window as any).TEMPORARY;
   }
 
   get PERSISTENT() {
-    return window.PERSISTENT;
+    return (window as any).PERSISTENT;
   }
 
   requestFileSystemAsync(type: number, size: number): Promise<FileSystemAsync> {

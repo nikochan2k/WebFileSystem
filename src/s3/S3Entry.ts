@@ -1,6 +1,8 @@
 import {
+  DirectoryEntry,
   DirectoryEntryCallback,
   Entry,
+  EntryCallback,
   ErrorCallback,
   MetadataCallback,
   VoidCallback

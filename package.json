@@ -30,8 +30,6 @@
     ]
   },
   "devDependencies": {
-    "@types/evaporate": "^2.1.4",
-    "@types/filesystem": "^0.0.29",
     "@types/jest": "^24.0.23",
     "@types/node": "^12.12.14",
     "fake-indexeddb": "^3.0.0",
@@ -45,7 +43,6 @@
   },
   "dependencies": {
     "aws-sdk": "^2.588.0",
-    "evaporate": "^2.1.4",
     "idb.filesystem.js": "^0.0.8"
   }
 }

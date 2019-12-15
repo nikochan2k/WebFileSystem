@@ -2,14 +2,7 @@ import { AbstractFileWriter } from "../AbstractFileWriter";
 import { FileWriter } from "../filewriter";
 import { getKey } from "./S3Util";
 import { S3FileEntry } from "./S3FileEntry";
-import { AWSError } from "aws-sdk";
-import {
-  CreateMultipartUploadRequest,
-  UploadPartRequest,
-  CompleteMultipartUploadRequest,
-  CompletedMultipartUpload
-} from "aws-sdk/clients/s3";
-import { onError } from "../WebFileSystemUtil";
+import { CompletedMultipartUpload } from "aws-sdk/clients/s3";
 
 export class S3FileWriter extends AbstractFileWriter implements FileWriter {
   constructor(private s3FileEntry: S3FileEntry) {
@@ -57,7 +50,6 @@ export class S3FileWriter extends AbstractFileWriter implements FileWriter {
           return;
         }
 
-        console.log("createMultipartUpload success");
         try {
           const uploadId = res.UploadId;
           const partSize = 1024 * 1024 * 5;
@@ -78,28 +70,33 @@ export class S3FileWriter extends AbstractFileWriter implements FileWriter {
           ) {
             const end = Math.min(rangeStart + partSize, allSize);
 
-            const sendData = await new Promise(resolve => {
-              const fileReader = new FileReader();
-              fileReader.onloadend = event => {
-                const data = event.target.result as ArrayBuffer;
-                const byte = new Uint8Array(data);
-                resolve(byte);
-              };
-              const blob = this.file.slice(rangeStart, end);
-              fileReader.readAsArrayBuffer(blob);
-            });
-            console.log("sendData success");
-
+            let body: any;
+            if (typeof process === "object") {
+              // Node
+              const sendData = await new Promise<Uint8Array>(resolve => {
+                const fileReader = new FileReader();
+                fileReader.onloadend = event => {
+                  const data = event.target.result as ArrayBuffer;
+                  const byte = new Uint8Array(data);
+                  resolve(byte);
+                };
+                const blob = this.file.slice(rangeStart, end);
+                fileReader.readAsArrayBuffer(blob);
+              });
+              body = new Buffer(sendData);
+            } else {
+              // Browser
+              body = this.file.slice(rangeStart, end);
+            }
             const partUpload = await s3
               .uploadPart({
                 Bucket: bucket,
                 Key: key,
-                Body: sendData,
+                Body: body,
                 PartNumber: partNum,
                 UploadId: uploadId
               })
               .promise();
-            console.log("uploadPart success");
 
             multipartMap.Parts.push({
               ETag: partUpload.ETag,

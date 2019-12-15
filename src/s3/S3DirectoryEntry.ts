@@ -1,23 +1,21 @@
-import {
-  DIR_SEPARATOR,
-  EMPTY_ARRAY_BUFFER,
-  EMPTY_BLOB
-} from "../WebFileSystemConstants";
+import { DIR_SEPARATOR } from "../WebFileSystemConstants";
 import {
   DirectoryEntry,
   DirectoryEntryCallback,
   DirectoryReader,
   ErrorCallback,
+  FileEntryCallback,
   Flags,
   MetadataCallback,
   VoidCallback
 } from "../filesystem";
 import { getKey } from "./S3Util";
+import { NOT_FOUND_ERR } from "../FileError";
+import { PutObjectRequest } from "aws-sdk/clients/s3";
 import { resolveToFullPath } from "../WebFileSystemUtil";
 import { S3DirectoryReader } from "./S3DirectoryReader";
 import { S3Entry } from "./S3Entry";
 import { S3FileEntry } from "./S3FileEntry";
-import { PutObjectRequest } from "aws-sdk/clients/s3";
 
 export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
   isFile = false;
@@ -37,7 +35,11 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
       { Bucket: filesystem.bucket, Key: key },
       (err, data) => {
         if (err) {
-          errorCallback(err);
+          if (err.statusCode === 404) {
+            errorCallback(NOT_FOUND_ERR);
+          } else {
+            errorCallback(err);
+          }
         } else {
           const name = key.split(DIR_SEPARATOR).pop();
           successCallback(
@@ -62,7 +64,7 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
   ): void {
     path = resolveToFullPath(this.fullPath, path);
     const key = getKey(path);
-    if (options.create) {
+    if (options && options.create) {
       const filesystem = this.filesystem;
       const request: PutObjectRequest = {
         Bucket: filesystem.bucket,

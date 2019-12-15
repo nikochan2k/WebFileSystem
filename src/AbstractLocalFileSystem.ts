@@ -1,13 +1,18 @@
-import { LocalFileSystem } from "./filesystem";
+import {
+  EntryCallback,
+  ErrorCallback,
+  FileSystemCallback,
+  LocalFileSystem
+} from "./filesystem";
 
 export abstract class AbstractLocalFileSystem implements LocalFileSystem {
   constructor(public bucket: string) {}
 
   get TEMPORARY() {
-    return window.TEMPORARY;
+    return (window as any).TEMPORARY;
   }
   get PERSISTENT() {
-    return window.PERSISTENT;
+    return (window as any).PERSISTENT;
   }
 
   abstract requestFileSystem(

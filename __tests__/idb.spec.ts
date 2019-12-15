@@ -8,7 +8,7 @@ let fs: FileSystemAsync;
 beforeAll(async () => {
   const factory = new WebLocalFileSystemAsync("web-file-system-test");
   fs = await factory.requestFileSystemAsync(
-    window.PERSISTENT,
+    (window as any).PERSISTENT,
     Number.MAX_VALUE
   );
 });

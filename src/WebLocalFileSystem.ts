@@ -7,11 +7,11 @@ import {
 import { IdbLocalFileSystem } from "./idb/IdbLocalFileSystem";
 import { S3LocalFileSystem } from "./s3/S3LocalFileSystem";
 
-if (window.TEMPORARY == null) {
-  window.TEMPORARY = 0;
+if ((window as any).TEMPORARY == null) {
+  (window as any).TEMPORARY = 0;
 }
-if (window.PERSISTENT == null) {
-  window.PERSISTENT = 1;
+if ((window as any).PERSISTENT == null) {
+  (window as any).PERSISTENT = 1;
 }
 
 export class WebLocalFileSystem implements LocalFileSystem {
@@ -43,18 +43,18 @@ export class WebLocalFileSystem implements LocalFileSystem {
 
   private constructNativeFileSystem() {
     this.localFileSystem.requestFileSystem =
-      window.requestFileSystem || window.webkitRequestFileSystem;
-    this.localFileSystem.resolveLocalFileSystemURL =
-      window.resolveLocalFileSystemURL;
-    this.localFileSystem.TEMPORARY = window.TEMPORARY;
-    this.localFileSystem.PERSISTENT = window.PERSISTENT;
+      (window as any).requestFileSystem ||
+      (window as any).webkitRequestFileSystem;
+    this.localFileSystem.resolveLocalFileSystemURL = (window as any).resolveLocalFileSystemURL;
+    this.localFileSystem.TEMPORARY = (window as any).TEMPORARY;
+    this.localFileSystem.PERSISTENT = (window as any).PERSISTENT;
   }
 
   get TEMPORARY() {
-    return window.TEMPORARY;
+    return (window as any).TEMPORARY;
   }
   get PERSISTENT() {
-    return window.PERSISTENT;
+    return (window as any).PERSISTENT;
   }
 
   requestFileSystem(

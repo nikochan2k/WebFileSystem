@@ -8,6 +8,8 @@ import {
 import { DIR_SEPARATOR, EMPTY_BLOB } from "../WebFileSystemConstants";
 import {
   DirectoryEntry,
+  DirectoryEntryCallback,
+  DirectoryReader,
   ErrorCallback,
   FileEntryCallback,
   Flags,

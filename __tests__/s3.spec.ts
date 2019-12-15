@@ -4,9 +4,16 @@ import { NOT_FOUND_ERR } from "../src/FileError";
 
 let fs: FileSystemAsync;
 beforeAll(async () => {
-  const factory = new WebLocalFileSystemAsync("web-file-system-test", "s3");
+  // TODO バケットを消す
+  const factory = new WebLocalFileSystemAsync("web-file-system-test", "s3", {
+    accessKeyId: "KFS0LZVKZ8G456A502L3",
+    secretAccessKey: "uVwBONMdTwJI1+C8jUhrypvshHz3OY8Ooar3amdC",
+    endpoint: "http://127.0.0.1:9000",
+    s3ForcePathStyle: true, // needed with minio?
+    signatureVersion: "v4"
+  });
   fs = await factory.requestFileSystemAsync(
-    window.PERSISTENT,
+    (window as any).PERSISTENT,
     Number.MAX_VALUE
   );
 });
@@ -40,7 +47,6 @@ test("add text file", async done => {
   let file = await fileEntry.file();
   expect(file.size).toBe(4);
 
-  /*
   await writer.write(new Blob(["fuga"], { type: "text/plain" }));
   file = await fileEntry.file();
   expect(file.size).toBe(8);
@@ -54,12 +60,10 @@ test("add text file", async done => {
     reader.readAsText(file);
   });
   expect(str).toBe("hogefuga");
-  */
 
   done();
 });
 
-/*
 test("create dir", async done => {
   const dirEntry = await fs.root.getDirectory("folder", {
     create: true,
@@ -100,4 +104,3 @@ test("readdir", async done => {
 
   done();
 });
-*/
