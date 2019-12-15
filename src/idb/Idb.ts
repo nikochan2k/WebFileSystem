@@ -9,9 +9,7 @@ import { IdbObject } from "./IdbObject";
 const FILE_STORE = "entries";
 
 const indexedDB: IDBFactory =
-  window.indexedDB ||
-  (window as any).mozIndexedDB ||
-  (window as any).msIndexedDB;
+  window.indexedDB || window.mozIndexedDB || window.msIndexedDB;
 
 export class Idb {
   static SUPPORTS_BLOB = true;

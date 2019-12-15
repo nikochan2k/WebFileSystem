@@ -9,10 +9,10 @@ export abstract class AbstractLocalFileSystem implements LocalFileSystem {
   constructor(public bucket: string) {}
 
   get TEMPORARY() {
-    return (window as any).TEMPORARY;
+    return window.TEMPORARY;
   }
   get PERSISTENT() {
-    return (window as any).PERSISTENT;
+    return window.PERSISTENT;
   }
 
   abstract requestFileSystem(

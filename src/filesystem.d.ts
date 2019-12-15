@@ -571,3 +571,11 @@ export interface FileEntryAsync extends EntryAsync {
    */
   file(): Promise<File>;
 }
+
+declare global {
+  interface Window extends LocalFileSystem {
+    mozIndexedDB: any;
+    msIndexedDB: any;
+  }
+  interface WorkerGlobalScope extends LocalFileSystem {}
+}

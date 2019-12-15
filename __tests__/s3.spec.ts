@@ -13,7 +13,7 @@ beforeAll(async () => {
     signatureVersion: "v4"
   });
   fs = await factory.requestFileSystemAsync(
-    (window as any).PERSISTENT,
+    window.PERSISTENT,
     Number.MAX_VALUE
   );
 });
