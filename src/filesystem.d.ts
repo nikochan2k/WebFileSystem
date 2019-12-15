@@ -576,6 +576,7 @@ declare global {
   interface Window extends LocalFileSystem {
     mozIndexedDB: any;
     msIndexedDB: any;
+    webkitRequestFileSystem: any;
   }
   interface WorkerGlobalScope extends LocalFileSystem {}
 }

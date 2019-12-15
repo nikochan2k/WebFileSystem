@@ -1,17 +1,29 @@
 import { WebLocalFileSystemAsync } from "../src/WebLocalFileSystemAsync";
 import { FileSystemAsync } from "../src/filesystem";
 import { NOT_FOUND_ERR } from "../src/FileError";
+import { S3 } from "aws-sdk";
 
 let fs: FileSystemAsync;
 beforeAll(async () => {
-  // TODO バケットを消す
-  const factory = new WebLocalFileSystemAsync("web-file-system-test", "s3", {
+  const options: S3.ClientConfiguration = {
     accessKeyId: "KFS0LZVKZ8G456A502L3",
     secretAccessKey: "uVwBONMdTwJI1+C8jUhrypvshHz3OY8Ooar3amdC",
     endpoint: "http://127.0.0.1:9000",
     s3ForcePathStyle: true, // needed with minio?
     signatureVersion: "v4"
-  });
+  };
+
+  const s3 = new S3(options);
+  const bucket = "web-file-system-test";
+  try {
+    await s3.createBucket({ Bucket: bucket }).promise();
+  } catch (e) {}
+  const list = await s3.listObjectsV2({ Bucket: bucket }).promise();
+  for (const content of list.Contents) {
+    await s3.deleteObject({ Bucket: bucket, Key: content.Key }).promise();
+  }
+
+  const factory = new WebLocalFileSystemAsync(bucket, "s3", options);
   fs = await factory.requestFileSystemAsync(
     window.PERSISTENT,
     Number.MAX_VALUE
