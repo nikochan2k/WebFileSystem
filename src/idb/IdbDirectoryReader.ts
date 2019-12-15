@@ -1,6 +1,6 @@
 import { DirectoryReader, EntriesCallback, ErrorCallback } from "../filesystem";
 import { IdbDirectoryEntry } from "./IdbDirectoryEntry";
-import { onError } from "./IdbUtil";
+import { onError } from "../WebFileSystemUtil";
 
 export class IdbDirectoryReader implements DirectoryReader {
   constructor(public dirEntry: IdbDirectoryEntry, public used = false) {}

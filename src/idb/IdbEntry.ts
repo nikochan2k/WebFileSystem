@@ -1,4 +1,4 @@
-import { DIR_SEPARATOR } from "./IdbConstants";
+import { DIR_SEPARATOR } from "../WebFileSystemConstants";
 import {
   DirectoryEntry,
   DirectoryEntryCallback,
@@ -8,9 +8,9 @@ import {
   VoidCallback
 } from "../filesystem";
 import { IdbFileSystem } from "./IdbFileSystem";
-import { IdbParams } from "./IdbParams";
 import { NOT_IMPLEMENTED_ERR } from "../FileError";
-import { onError } from "./IdbUtil";
+import { onError } from "../WebFileSystemUtil";
+import { WebFileSystemParams } from "../WebFileSystemParams";
 
 export abstract class IdbEntry implements Entry {
   abstract isFile: boolean;
@@ -19,10 +19,10 @@ export abstract class IdbEntry implements Entry {
   name: string;
   fullPath: string;
 
-  constructor(entry: IdbParams) {
-    this.filesystem = entry.filesystem;
-    this.name = entry.name;
-    this.fullPath = entry.fullPath;
+  constructor(params: WebFileSystemParams<IdbFileSystem>) {
+    this.filesystem = params.filesystem;
+    this.name = params.name;
+    this.fullPath = params.fullPath;
   }
 
   remove(

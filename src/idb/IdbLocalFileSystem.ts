@@ -1,13 +1,12 @@
+import { AbstractLocalFileSystem } from "../AbstractLocalFileSystem";
 import {
   EntryCallback,
   ErrorCallback,
-  FileSystemCallback,
-  LocalFileSystem
+  FileSystemCallback
 } from "../filesystem";
 import { Idb } from "./Idb";
 import { NOT_IMPLEMENTED_ERR } from "../FileError";
-import { onError } from "./IdbUtil";
-import { AbstractLocalFileSystem } from "../AbstractLocalFileSystem";
+import { onError } from "../WebFileSystemUtil";
 
 export class IdbLocalFileSystem extends AbstractLocalFileSystem {
   requestFileSystem(
@@ -19,6 +18,7 @@ export class IdbLocalFileSystem extends AbstractLocalFileSystem {
     if (type === this.TEMPORARY) {
       throw new Error("No temporary storage");
     }
+
     const idb = new Idb();
     idb
       .open(this.bucket)

@@ -1,5 +1,11 @@
-import { base64ToFile, blobToFile, createEmptyFile, onError } from "./IdbUtil";
-import { DIR_SEPARATOR, EMPTY_BLOB } from "./IdbConstants";
+import {
+  base64ToFile,
+  blobToFile,
+  createEmptyFile,
+  onError,
+  resolveToFullPath
+} from "../WebFileSystemUtil";
+import { DIR_SEPARATOR, EMPTY_BLOB } from "../WebFileSystemConstants";
 import {
   DirectoryEntry,
   ErrorCallback,
@@ -11,49 +17,17 @@ import { Idb } from "./Idb";
 import { IdbDirectoryReader } from "./IdbDirectoryReader";
 import { IdbEntry } from "./IdbEntry";
 import { IdbFileEntry } from "./IdbFileEntry";
+import { IdbFileSystem } from "./IdbFileSystem";
 import { IdbObject } from "./IdbObject";
-import { IdbParams } from "./IdbParams";
 import { INVALID_MODIFICATION_ERR, NOT_FOUND_ERR } from "../FileError";
-
-function resolveToFullPath(cwdFullPath: string, path: string) {
-  let fullPath = path;
-
-  const relativePath = path[0] != DIR_SEPARATOR;
-  if (relativePath) {
-    fullPath = cwdFullPath + DIR_SEPARATOR + path;
-  }
-
-  // Normalize '.'s,  '..'s and '//'s.
-  const parts = fullPath.split(DIR_SEPARATOR);
-  const finalParts = [];
-  for (const part of parts) {
-    if (part === "..") {
-      // Go up one level.
-      if (!finalParts.length) {
-        throw Error("Invalid path");
-      }
-      finalParts.pop();
-    } else if (part === ".") {
-      // Skip over the current directory.
-    } else if (part !== "") {
-      // Eliminate sequences of '/'s as well as possible leading/trailing '/'s.
-      finalParts.push(part);
-    }
-  }
-
-  fullPath = DIR_SEPARATOR + finalParts.join(DIR_SEPARATOR);
-
-  // fullPath is guaranteed to be normalized by construction at this point:
-  // '.'s, '..'s, '//'s will never appear in it.
-  return fullPath;
-}
+import { WebFileSystemParams } from "../WebFileSystemParams";
 
 export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
   public isFile = false;
   public isDirectory = true;
   public lastModifiedDate: Date;
 
-  constructor(params: IdbParams) {
+  constructor(params: WebFileSystemParams<IdbFileSystem>) {
     super(params);
     this.lastModifiedDate = params.lastModifiedDate;
   }
@@ -61,8 +35,6 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
   createReader(): DirectoryReader {
     return new IdbDirectoryReader(this);
   }
-
-  createFile() {}
 
   getFile(
     path: string,

@@ -1,4 +1,4 @@
-import { DIR_SEPARATOR } from "./IdbConstants";
+import { DIR_SEPARATOR } from "../WebFileSystemConstants";
 import { FileSystem } from "../filesystem";
 import { Idb } from "./Idb";
 import { IdbDirectoryEntry } from "./IdbDirectoryEntry";

@@ -6,10 +6,11 @@ import {
   MetadataCallback
 } from "../filesystem";
 import { IdbEntry } from "./IdbEntry";
+import { IdbFileSystem } from "./IdbFileSystem";
 import { IdbFileWriter } from "./IdbFileWriter";
-import { IdbParams } from "./IdbParams";
+import { WebFileSystemParams } from "../WebFileSystemParams";
 
-interface IdbFileParams extends IdbParams {
+interface IdbFileParams extends WebFileSystemParams<IdbFileSystem> {
   file: File;
 }
 

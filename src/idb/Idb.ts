@@ -1,5 +1,5 @@
-import { base64ToFile, blobToFile } from "./IdbUtil";
-import { DIR_OPEN_BOUND, DIR_SEPARATOR } from "./IdbConstants";
+import { base64ToFile, blobToFile } from "../WebFileSystemUtil";
+import { DIR_OPEN_BOUND, DIR_SEPARATOR } from "../WebFileSystemConstants";
 import { IdbDirectoryEntry } from "./IdbDirectoryEntry";
 import { IdbEntry } from "./IdbEntry";
 import { IdbFileEntry } from "./IdbFileEntry";
