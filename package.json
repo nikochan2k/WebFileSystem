@@ -30,19 +30,19 @@
     ]
   },
   "devDependencies": {
-    "@types/jest": "^24.0.23",
-    "@types/node": "^12.12.14",
+    "@types/jest": "^24.0.25",
+    "@types/node": "^13.1.1",
     "fake-indexeddb": "^3.0.0",
     "html-webpack-plugin": "^3.2.0",
     "jest": "^24.9.0",
     "ts-jest": "^24.2.0",
     "ts-loader": "^6.2.1",
-    "typescript": "^3.7.2",
-    "webpack": "^4.41.2",
+    "typescript": "^3.7.4",
+    "webpack": "^4.41.5",
     "webpack-cli": "^3.3.10"
   },
   "dependencies": {
-    "aws-sdk": "^2.588.0",
+    "aws-sdk": "^2.596.0",
     "idb.filesystem.js": "^0.0.8"
   }
 }
