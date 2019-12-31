@@ -186,7 +186,8 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
                     lastModifiedDate:
                       newEntry.lastModified == null
                         ? null
-                        : new Date(newEntry.lastModified)
+                        : new Date(newEntry.lastModified),
+                    size: null
                   })
                 );
               })
@@ -208,7 +209,8 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
                   lastModifiedDate:
                     entry.lastModified == null
                       ? null
-                      : new Date(entry.lastModified)
+                      : new Date(entry.lastModified),
+                  size: null
                 })
               );
             } else {
@@ -228,7 +230,8 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
                   filesystem: this.filesystem,
                   name: "",
                   fullPath: DIR_SEPARATOR,
-                  lastModifiedDate: null
+                  lastModifiedDate: null,
+                  size: null
                 })
               );
             }
@@ -256,7 +259,8 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
                 lastModifiedDate:
                   entry.lastModified == null
                     ? null
-                    : new Date(entry.lastModified)
+                    : new Date(entry.lastModified),
+                size: null
               })
             );
           }
@@ -273,7 +277,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
   ): void {
     successCallback({
       modificationTime: this.lastModifiedDate,
-      size: 0
+      size: null
     });
   }
 }

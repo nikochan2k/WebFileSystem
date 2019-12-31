@@ -12,7 +12,7 @@ import {
 import { getKey } from "./S3Util";
 import { NOT_FOUND_ERR } from "../FileError";
 import { PutObjectRequest } from "aws-sdk/clients/s3";
-import { resolveToFullPath } from "../WebFileSystemUtil";
+import { resolveToFullPath, onError } from "../WebFileSystemUtil";
 import { S3DirectoryReader } from "./S3DirectoryReader";
 import { S3Entry } from "./S3Entry";
 import { S3FileEntry } from "./S3FileEntry";
@@ -36,11 +36,11 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
       (err, data) => {
         if (err) {
           if (err.statusCode === 404) {
-            errorCallback(NOT_FOUND_ERR);
+            onError(NOT_FOUND_ERR, errorCallback);
           } else {
-            errorCallback(err);
+            onError(err, errorCallback);
           }
-        } else {
+        } else if (successCallback) {
           const name = key.split(DIR_SEPARATOR).pop();
           successCallback(
             new S3FileEntry({
@@ -97,7 +97,8 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
         filesystem: this.filesystem,
         name: name,
         fullPath: path,
-        lastModifiedDate: null
+        lastModifiedDate: null,
+        size: null
       })
     );
   }
@@ -119,7 +120,7 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
   ): void {
     successCallback({
       modificationTime: this.lastModifiedDate,
-      size: 0
+      size: null
     });
   }
 }

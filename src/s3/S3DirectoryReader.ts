@@ -4,6 +4,7 @@ import { getPrefix } from "./S3Util";
 import { S3DirectoryEntry } from "./S3DirectoryEntry";
 import { S3Entry } from "./S3Entry";
 import { S3FileEntry } from "./S3FileEntry";
+import { onError } from "../WebFileSystemUtil";
 
 export class S3DirectoryReader implements DirectoryReader {
   constructor(public dirEntry: S3DirectoryEntry, public used = false) {}
@@ -25,7 +26,7 @@ export class S3DirectoryReader implements DirectoryReader {
 
     filesystem.s3.listObjectsV2(param, (err, data) => {
       if (err) {
-        errorCallback(err);
+        onError(err, errorCallback);
       } else {
         const entries: S3Entry[] = [];
         for (const content of data.CommonPrefixes) {
@@ -35,7 +36,8 @@ export class S3DirectoryReader implements DirectoryReader {
             filesystem: filesystem,
             name: name,
             fullPath: (fullPath === "/" ? "" : fullPath) + DIR_SEPARATOR + name,
-            lastModifiedDate: null
+            lastModifiedDate: null,
+            size: null
           });
           entries.push(newDirEntry);
         }

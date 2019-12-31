@@ -39,8 +39,7 @@ export class Idb {
           request.result.createObjectStore("store");
         };
         request.onerror = function() {
-          Idb.SUPPORTS_BLOB = false;
-          resolve();
+          reject();
         };
         request.onsuccess = function() {
           const db = request.result;
@@ -69,9 +68,7 @@ export class Idb {
 
     const self = this;
     return new Promise<void>((resolve, reject) => {
-      const request = indexedDB.open(
-        dbName.replace(":", "_") /*, 1 /*version*/
-      );
+      const request = indexedDB.open(dbName.replace(":", "_"));
       request.onupgradeneeded = function(ev) {
         const request = ev.target as IDBRequest;
         self.db = request.result;
@@ -250,10 +247,11 @@ export class Idb {
                   lastModifiedDate:
                     entry.lastModified == null
                       ? null
-                      : new Date(entry.lastModified)
+                      : new Date(entry.lastModified),
+                  size: null
                 })
           );
-          cursor["continue"]();
+          cursor.continue();
         }
       };
     });

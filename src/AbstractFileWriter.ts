@@ -13,6 +13,20 @@ export abstract class AbstractFileWriter implements FileWriter {
     return this.file.size;
   }
 
+  protected handleError(err: Error) {
+    if (this.onerror) {
+      const evt: ProgressEvent<EventTarget> = {
+        error: err,
+        loaded: this.position,
+        total: this.length,
+        lengthComputable: true
+      } as any;
+      this.onerror(evt);
+    } else {
+      console.error(err);
+    }
+  }
+
   write(data: Blob): void {
     // TODO: not handling onwritestart, onprogress, onwrite, onabort. Throw an error if
     // they're defined.

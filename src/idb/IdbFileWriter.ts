@@ -39,8 +39,7 @@ export class IdbFileWriter extends AbstractFileWriter implements FileWriter {
           }
         })
         .catch(err => {
-          onError(err);
-          this.onerror(err);
+          this.handleError(err);
         });
     };
 

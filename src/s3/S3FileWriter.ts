@@ -9,23 +9,6 @@ export class S3FileWriter extends AbstractFileWriter implements FileWriter {
     super(s3FileEntry);
   }
 
-  private handleError(err: Error): boolean {
-    if (err) {
-      if (this.onerror) {
-        const evt: ProgressEvent<EventTarget> = {
-          error: err,
-          loaded: this.position,
-          total: this.length,
-          lengthComputable: true
-        } as any;
-        this.onerror(evt);
-      }
-      console.error(err);
-      return true;
-    }
-    return false;
-  }
-
   doWrite(file: File, onsuccess: () => void) {
     const filesystem = this.s3FileEntry.filesystem;
     const s3 = filesystem.s3;
@@ -38,7 +21,8 @@ export class S3FileWriter extends AbstractFileWriter implements FileWriter {
         ContentType: "application/octet-stream"
       },
       async (err, res) => {
-        if (this.handleError(err)) {
+        if (err) {
+          this.handleError(err);
           return;
         }
 

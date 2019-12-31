@@ -14,7 +14,8 @@ export class S3FileSystem implements FileSystem {
       filesystem: this,
       name: "",
       fullPath: DIR_SEPARATOR,
-      lastModifiedDate: null
+      lastModifiedDate: null,
+      size: null
     });
   }
 }

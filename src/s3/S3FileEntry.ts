@@ -1,4 +1,4 @@
-import { blobToFile } from "../WebFileSystemUtil";
+import { blobToFile, onError } from "../WebFileSystemUtil";
 import {
   ErrorCallback,
   FileCallback,
@@ -51,7 +51,7 @@ export class S3FileEntry extends S3Entry implements FileEntry {
       { Bucket: filesystem.bucket, Key: getKey(this.fullPath) },
       (err, data) => {
         if (err) {
-          errorCallback(err);
+          onError(err, errorCallback);
         } else {
           this.size = data.ContentLength;
           const body = data.Body;
@@ -70,7 +70,7 @@ export class S3FileEntry extends S3Entry implements FileEntry {
             this.s3FileWriter = new S3FileWriter(this, file);
             successCallback(file);
           } else {
-            errorCallback(new Error("Unknown data type"));
+            onError(new Error("Unknown data type"), errorCallback);
           }
         }
       }
@@ -93,7 +93,7 @@ export class S3FileEntry extends S3Entry implements FileEntry {
       { Bucket: this.filesystem.bucket, Key: key },
       err => {
         if (err) {
-          errorCallback(err);
+          onError(err, errorCallback);
         } else {
           successCallback();
         }
