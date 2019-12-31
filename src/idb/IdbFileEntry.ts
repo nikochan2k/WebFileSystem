@@ -17,6 +17,7 @@ export class IdbFileEntry extends IdbEntry implements FileEntry {
   isDirectory = false;
   lastModifiedDate: Date;
   size: number;
+  private idbFileWriter: IdbFileWriter;
 
   constructor(params: WebFileSystemParams<IdbFileSystem>) {
     super(params);
@@ -28,15 +29,24 @@ export class IdbFileEntry extends IdbEntry implements FileEntry {
     successCallback: FileWriterCallback,
     errorCallback?: ErrorCallback | undefined
   ): void {
-    this.file(file => {
-      successCallback(new IdbFileWriter(this, file));
-    }, errorCallback);
+    if (!this.idbFileWriter) {
+      this.file(file => {
+        successCallback(this.idbFileWriter);
+      }, errorCallback);
+    } else {
+      successCallback(this.idbFileWriter);
+    }
   }
 
   file(
     successCallback: FileCallback,
     errorCallback?: ErrorCallback | undefined
   ): void {
+    if (this.idbFileWriter) {
+      successCallback(this.idbFileWriter.file);
+      return;
+    }
+
     const idb = this.filesystem.idb;
     idb
       .getEntry(this.fullPath)
@@ -44,15 +54,11 @@ export class IdbFileEntry extends IdbEntry implements FileEntry {
         idb
           .getContent(this.fullPath)
           .then(content => {
-            successCallback(
-              Idb.SUPPORTS_BLOB
-                ? blobToFile([content as Blob], entry.name, entry.lastModified)
-                : base64ToFile(
-                    content as string,
-                    entry.name,
-                    entry.lastModified
-                  )
-            );
+            const file = Idb.SUPPORTS_BLOB
+              ? blobToFile([content as Blob], entry.name, entry.lastModified)
+              : base64ToFile(content as string, entry.name, entry.lastModified);
+            this.idbFileWriter = new IdbFileWriter(this, file);
+            successCallback(file);
           })
           .catch(error => {
             onError(error, errorCallback);
