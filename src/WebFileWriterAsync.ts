@@ -15,7 +15,6 @@ export class WebFileWriterAsync implements FileWriterAsync {
     return new Promise<void>((resolve, reject) => {
       try {
         this.fileWriter.onwriteend = () => {
-          this.fileWriter.onwriteend = null;
           resolve();
         };
         this.fileWriter.write(data);
@@ -33,7 +32,6 @@ export class WebFileWriterAsync implements FileWriterAsync {
     return new Promise<void>((resolve, reject) => {
       try {
         this.fileWriter.onwriteend = () => {
-          this.fileWriter.onwriteend = null;
           resolve();
         };
         this.fileWriter.truncate(size);

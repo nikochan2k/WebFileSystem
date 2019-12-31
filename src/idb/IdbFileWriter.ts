@@ -10,25 +10,6 @@ export class IdbFileWriter extends AbstractFileWriter implements FileWriter {
     super(idbFileEntry);
   }
 
-  writeToIdb(entry: IdbObject, content: string | Blob) {
-    this.idbFileEntry.filesystem.idb
-      .put(entry, content)
-      .then(() => {
-        if (this.onwriteend) {
-          const evt: ProgressEvent<EventTarget> = {
-            loaded: this.position,
-            total: this.length,
-            lengthComputable: true
-          } as any;
-          this.onwriteend(evt);
-        }
-      })
-      .catch(err => {
-        onError(err);
-        this.onerror(err);
-      });
-  }
-
   doWrite(data: Blob | ArrayBuffer) {
     let blob: Blob;
     if (data instanceof Blob) {
@@ -48,15 +29,33 @@ export class IdbFileWriter extends AbstractFileWriter implements FileWriter {
       size: blob.size
     };
 
+    const writeToIdb = (entry: IdbObject, content: string | Blob) => {
+      this.idbFileEntry.filesystem.idb
+        .put(entry, content)
+        .then(() => {
+          if (this.onwriteend) {
+            const evt: ProgressEvent<EventTarget> = {
+              loaded: this.position,
+              total: this.length,
+              lengthComputable: true
+            } as any;
+            this.onwriteend(evt);
+          }
+        })
+        .catch(err => {
+          onError(err);
+          this.onerror(err);
+        });
+    };
+
     if (Idb.SUPPORTS_BLOB) {
-      this.writeToIdb(entry, blob);
+      writeToIdb(entry, blob);
     } else {
       const reader = new FileReader();
-      const that = this;
       reader.onloadend = function() {
         const base64Url = reader.result as string;
         const base64 = base64Url.substr(base64Url.indexOf(",") + 1);
-        that.writeToIdb(entry, base64);
+        writeToIdb(entry, base64);
       };
       reader.readAsDataURL(blob);
     }

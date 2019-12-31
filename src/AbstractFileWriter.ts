@@ -36,11 +36,13 @@ export abstract class AbstractFileWriter implements FileWriter {
         current.name,
         Date.now()
       );
+      this.position += data.size;
     } else {
       this.file = blobToFile([data], this.fileEntry.name, Date.now());
+      this.position = data.size;
     }
 
-    this.doWrite(data);
+    this.doWrite(this.file);
   }
 
   protected abstract doWrite(data: Blob): void;

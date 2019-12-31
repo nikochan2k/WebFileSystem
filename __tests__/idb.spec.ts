@@ -13,6 +13,7 @@ beforeAll(async () => {
   );
 });
 
+/*
 test("add empty file", async done => {
   const fileEntry = await fs.root.getFile("empty.txt", {
     create: true,
@@ -24,6 +25,7 @@ test("add empty file", async done => {
   expect(fileEntry.isFile).toBe(true);
   done();
 });
+*/
 
 test("add text file", async done => {
   const fileEntry = await fs.root.getFile("test.txt", {
@@ -37,11 +39,12 @@ test("add text file", async done => {
 
   const writer = await fileEntry.createWriter();
   await writer.write(new Blob(["hoge"], { type: "text/plain" }));
-
+  expect(writer.position).toBe(4);
   let file = await fileEntry.file();
   expect(file.size).toBe(4);
 
   await writer.write(new Blob(["fuga"], { type: "text/plain" }));
+  expect(writer.position).toBe(8);
   file = await fileEntry.file();
   expect(file.size).toBe(8);
 
@@ -58,6 +61,7 @@ test("add text file", async done => {
   done();
 });
 
+/*
 test("create dir", async done => {
   const dirEntry = await fs.root.getDirectory("folder", {
     create: true,
@@ -98,3 +102,4 @@ test("readdir", async done => {
 
   done();
 });
+*/

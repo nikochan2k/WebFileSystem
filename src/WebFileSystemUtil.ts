@@ -66,9 +66,10 @@ export function base64ToFile(
   name: string,
   lastModified: number
 ) {
-  const array = new Uint8Array(base64.length);
-  for (let i = 0; i < base64.length; i++) {
-    array[i] = base64.charCodeAt(i);
+  const bin = atob(base64);
+  const array = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) {
+    array[i] = bin.charCodeAt(i);
   }
   const file = new File([array.buffer], name, {
     lastModified: lastModified,
