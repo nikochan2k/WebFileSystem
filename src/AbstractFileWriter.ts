@@ -31,21 +31,26 @@ export abstract class AbstractFileWriter implements FileWriter {
 
       // Do the "write". In fact, a full overwrite of the Blob.
       // TODO: figure out if data.type should overwrite the exist blob's type.
-      this.file = blobToFile(
+      const file = blobToFile(
         [head, new Uint8Array(padding), data, tail],
         current.name,
         Date.now()
       );
-      this.position += data.size;
-    } else {
-      this.file = blobToFile([data], this.fileEntry.name, Date.now());
-      this.position = data.size;
-    }
 
-    this.doWrite(this.file);
+      this.doWrite(file, () => {
+        this.file = file;
+        this.position += data.size;
+      });
+    } else {
+      const file = blobToFile([data], this.fileEntry.name, Date.now());
+      this.doWrite(file, () => {
+        this.file = file;
+        this.position = data.size;
+      });
+    }
   }
 
-  protected abstract doWrite(data: Blob): void;
+  protected abstract doWrite(file: File, onsuccess: () => void): void;
 
   seek(offset: number): void {
     this.position = offset;
@@ -59,26 +64,25 @@ export abstract class AbstractFileWriter implements FileWriter {
 
   truncate(size: number): void {
     const current = this.file;
+    let file: File;
     if (current) {
       if (size < this.length) {
-        this.file = blobToFile(
-          [current.slice(0, size)],
-          current.name,
-          Date.now()
-        );
+        file = blobToFile([current.slice(0, size)], current.name, Date.now());
       } else {
-        this.file = blobToFile(
+        file = blobToFile(
           [current, new Uint8Array(size - this.length)],
           current.name,
           Date.now()
         );
       }
     } else {
-      this.file = createEmptyFile(this.fileEntry.name);
+      file = createEmptyFile(this.fileEntry.name);
     }
 
-    this.position = 0; // truncate from beginning of file.
-    this.doWrite(this.file);
+    this.doWrite(file, () => {
+      this.file = file;
+      this.position = 0;
+    });
   }
 
   abort(): void {

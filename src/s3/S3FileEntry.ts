@@ -21,7 +21,7 @@ export class S3FileEntry extends S3Entry implements FileEntry {
   isFile = true;
   isDirectory = false;
   size: number;
-  file_: File;
+  private s3FileWriter: S3FileWriter;
 
   constructor(params: S3FileParams) {
     super(params);
@@ -32,12 +32,18 @@ export class S3FileEntry extends S3Entry implements FileEntry {
     successCallback: FileWriterCallback,
     errorCallback?: ErrorCallback
   ): void {
-    successCallback(new S3FileWriter(this));
+    if (!this.s3FileWriter) {
+      this.file(file => {
+        successCallback(this.s3FileWriter);
+      }, errorCallback);
+    } else {
+      successCallback(this.s3FileWriter);
+    }
   }
 
   file(successCallback: FileCallback, errorCallback?: ErrorCallback): void {
-    if (this.file_) {
-      successCallback(this.file_);
+    if (this.s3FileWriter) {
+      successCallback(this.s3FileWriter.file);
       return;
     }
     const filesystem = this.filesystem;
@@ -48,18 +54,21 @@ export class S3FileEntry extends S3Entry implements FileEntry {
           errorCallback(err);
         } else {
           this.size = data.ContentLength;
+          const body = data.Body;
           if (
-            data instanceof ArrayBuffer ||
-            data instanceof Blob ||
-            typeof data === "string"
+            body instanceof Buffer ||
+            body instanceof ArrayBuffer ||
+            body instanceof Blob ||
+            typeof body === "string"
           ) {
-            this.file_ = blobToFile(
-              [data],
+            const file = blobToFile(
+              [body],
               this.name,
               this.lastModifiedDate.getTime(),
               data.ContentType
             );
-            successCallback(this.file_);
+            this.s3FileWriter = new S3FileWriter(this, file);
+            successCallback(file);
           } else {
             errorCallback(new Error("Unknown data type"));
           }

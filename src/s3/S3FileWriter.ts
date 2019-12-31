@@ -5,16 +5,8 @@ import { S3FileEntry } from "./S3FileEntry";
 import { CompletedMultipartUpload } from "aws-sdk/clients/s3";
 
 export class S3FileWriter extends AbstractFileWriter implements FileWriter {
-  constructor(private s3FileEntry: S3FileEntry) {
+  constructor(private s3FileEntry: S3FileEntry, public file: File) {
     super(s3FileEntry);
-  }
-
-  get file() {
-    return this.s3FileEntry.file_;
-  }
-
-  set file(file: File) {
-    this.s3FileEntry.file_ = file;
   }
 
   private handleError(err: Error): boolean {
@@ -34,7 +26,7 @@ export class S3FileWriter extends AbstractFileWriter implements FileWriter {
     return false;
   }
 
-  doWrite(data: Blob) {
+  doWrite(file: File, onsuccess: () => void) {
     const filesystem = this.s3FileEntry.filesystem;
     const s3 = filesystem.s3;
     const bucket = filesystem.bucket;
@@ -53,7 +45,7 @@ export class S3FileWriter extends AbstractFileWriter implements FileWriter {
         try {
           const uploadId = res.UploadId;
           const partSize = 1024 * 1024 * 5;
-          const allSize = this.file.size;
+          const allSize = file.size;
 
           if (this.onwritestart) {
             this.onwritestart(null); // TODO
@@ -80,13 +72,13 @@ export class S3FileWriter extends AbstractFileWriter implements FileWriter {
                   const byte = new Uint8Array(data);
                   resolve(byte);
                 };
-                const blob = this.file.slice(rangeStart, end);
+                const blob = file.slice(rangeStart, end);
                 fileReader.readAsArrayBuffer(blob);
               });
               body = new Buffer(sendData);
             } else {
               // Browser
-              body = this.file.slice(rangeStart, end);
+              body = file.slice(rangeStart, end);
             }
             const partUpload = await s3
               .uploadPart({
@@ -113,7 +105,7 @@ export class S3FileWriter extends AbstractFileWriter implements FileWriter {
 
           await s3.completeMultipartUpload(doneParams).promise();
 
-          this.position += data.size;
+          onsuccess();
           if (this.onwriteend) {
             const evt: ProgressEvent<EventTarget> = {
               loaded: this.position,
