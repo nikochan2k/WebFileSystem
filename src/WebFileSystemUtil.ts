@@ -84,17 +84,6 @@ export function createEmptyFile(name: string) {
   });
 }
 
-export function toBase64(
-  blob: Blob,
-  onload: (result: string | Blob | ArrayBuffer) => void
-) {
-  const reader = new FileReader();
-  reader.onloadend = function() {
-    onload(reader.result);
-  };
-  reader.readAsDataURL(blob);
-}
-
 export function toArrayBuffer(
   blob: Blob,
   onload: (result: ArrayBuffer) => void

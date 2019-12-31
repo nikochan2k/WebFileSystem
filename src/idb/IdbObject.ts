@@ -4,5 +4,5 @@ export interface IdbObject {
   name: string;
   fullPath: string;
   lastModified?: number;
-  content?: string | Blob;
+  size?: number;
 }

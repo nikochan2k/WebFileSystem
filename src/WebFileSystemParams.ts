@@ -4,5 +4,6 @@ export interface WebFileSystemParams<FS extends FileSystem> {
   filesystem: FS;
   name: string;
   fullPath: string;
-  lastModifiedDate: Date;
+  lastModifiedDate?: Date;
+  size?: number;
 }

@@ -1,3 +1,4 @@
+import { base64ToFile, blobToFile, onError } from "../WebFileSystemUtil";
 import {
   ErrorCallback,
   FileCallback,
@@ -5,37 +6,61 @@ import {
   FileWriterCallback,
   MetadataCallback
 } from "../filesystem";
+import { Idb } from "./Idb";
 import { IdbEntry } from "./IdbEntry";
 import { IdbFileSystem } from "./IdbFileSystem";
 import { IdbFileWriter } from "./IdbFileWriter";
 import { WebFileSystemParams } from "../WebFileSystemParams";
 
-interface IdbFileParams extends WebFileSystemParams<IdbFileSystem> {
-  file: File;
-}
-
 export class IdbFileEntry extends IdbEntry implements FileEntry {
   isFile = true;
   isDirectory = false;
-  file_: File;
+  lastModifiedDate: Date;
+  size: number;
 
-  constructor(params: IdbFileParams) {
+  constructor(params: WebFileSystemParams<IdbFileSystem>) {
     super(params);
-    this.file_ = params.file;
+    this.lastModifiedDate = params.lastModifiedDate;
+    this.size = params.size;
   }
 
   createWriter(
     successCallback: FileWriterCallback,
     errorCallback?: ErrorCallback | undefined
   ): void {
-    successCallback(new IdbFileWriter(this));
+    this.file(file => {
+      successCallback(new IdbFileWriter(this, file));
+    }, errorCallback);
   }
 
   file(
     successCallback: FileCallback,
     errorCallback?: ErrorCallback | undefined
   ): void {
-    successCallback(this.file_);
+    const idb = this.filesystem.idb;
+    idb
+      .getEntry(this.fullPath)
+      .then(entry => {
+        idb
+          .getContent(this.fullPath)
+          .then(content => {
+            successCallback(
+              Idb.SUPPORTS_BLOB
+                ? blobToFile([content as Blob], entry.name, entry.lastModified)
+                : base64ToFile(
+                    content as string,
+                    entry.name,
+                    entry.lastModified
+                  )
+            );
+          })
+          .catch(error => {
+            onError(error, errorCallback);
+          });
+      })
+      .catch(error => {
+        onError(error, errorCallback);
+      });
   }
 
   getMetadata(
@@ -43,8 +68,8 @@ export class IdbFileEntry extends IdbEntry implements FileEntry {
     errorCallback?: ErrorCallback
   ): void {
     successCallback({
-      modificationTime: new Date(this.file_.lastModified),
-      size: this.file_.size
+      modificationTime: this.lastModifiedDate,
+      size: this.size
     });
   }
 }

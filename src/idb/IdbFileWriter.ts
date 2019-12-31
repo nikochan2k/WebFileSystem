@@ -3,62 +3,62 @@ import { FileWriter } from "../filewriter";
 import { Idb } from "./Idb";
 import { IdbFileEntry } from "./IdbFileEntry";
 import { IdbObject } from "./IdbObject";
-import { toBase64 } from "../WebFileSystemUtil";
+import { onError } from "../WebFileSystemUtil";
 
 export class IdbFileWriter extends AbstractFileWriter implements FileWriter {
-  constructor(private idbFileEntry: IdbFileEntry) {
+  constructor(private idbFileEntry: IdbFileEntry, public file: File) {
     super(idbFileEntry);
   }
 
-  get file() {
-    return this.idbFileEntry.file_;
+  writeToIdb(entry: IdbObject, content: string | Blob) {
+    this.idbFileEntry.filesystem.idb
+      .put(entry, content)
+      .then(() => {
+        if (this.onwriteend) {
+          const evt: ProgressEvent<EventTarget> = {
+            loaded: this.position,
+            total: this.length,
+            lengthComputable: true
+          } as any;
+          this.onwriteend(evt);
+        }
+      })
+      .catch(err => {
+        onError(err);
+        this.onerror(err);
+      });
   }
 
-  set file(file: File) {
-    this.idbFileEntry.file_ = file;
-  }
+  doWrite(data: Blob | ArrayBuffer) {
+    let blob: Blob;
+    if (data instanceof Blob) {
+      blob = data;
+    } else {
+      blob = new Blob([data], {
+        type: this.file.type
+      });
+    }
 
-  doWrite(data: Blob) {
-    const writeFile = (result: string | Blob | ArrayBuffer) => {
-      if (result instanceof ArrayBuffer) {
-        result = new Blob([result as ArrayBuffer], {
-          type: this.file.type
-        });
-      }
-      // Blob might be a DataURI depending on browser support.
-      const obj: IdbObject = {
-        isFile: this.fileEntry.isFile,
-        isDirectory: this.fileEntry.isDirectory,
-        name: this.fileEntry.name,
-        fullPath: this.fileEntry.fullPath,
-        lastModified: Date.now(),
-        content: result
-      };
-      const idb = this.idbFileEntry.filesystem.idb;
-      idb
-        .put(obj)
-        .then(_ => {
-          // Add size of data written to writer.position.
-          this.position += data.size;
-
-          if (this.onwriteend) {
-            const evt: ProgressEvent<EventTarget> = {
-              loaded: this.position,
-              total: this.length,
-              lengthComputable: true
-            } as any;
-            this.onwriteend(evt);
-          }
-        })
-        .catch(err => {
-          this.onabort(err);
-        });
+    const entry: IdbObject = {
+      isFile: this.fileEntry.isFile,
+      isDirectory: this.fileEntry.isDirectory,
+      name: this.fileEntry.name,
+      fullPath: this.fileEntry.fullPath,
+      lastModified: Date.now(),
+      size: blob.size
     };
 
     if (Idb.SUPPORTS_BLOB) {
-      writeFile(this.file);
+      this.writeToIdb(entry, blob);
     } else {
-      toBase64(this.file, writeFile);
+      const reader = new FileReader();
+      const that = this;
+      reader.onloadend = function() {
+        const base64Url = reader.result as string;
+        const base64 = base64Url.substr(base64Url.indexOf(",") + 1);
+        that.writeToIdb(entry, base64);
+      };
+      reader.readAsDataURL(blob);
     }
   }
 }

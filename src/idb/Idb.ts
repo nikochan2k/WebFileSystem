@@ -1,12 +1,16 @@
-import { base64ToFile, blobToFile } from "../WebFileSystemUtil";
-import { DIR_OPEN_BOUND, DIR_SEPARATOR } from "../WebFileSystemConstants";
+import {
+  DIR_OPEN_BOUND,
+  DIR_SEPARATOR,
+  EMPTY_BLOB
+} from "../WebFileSystemConstants";
 import { IdbDirectoryEntry } from "./IdbDirectoryEntry";
 import { IdbEntry } from "./IdbEntry";
 import { IdbFileEntry } from "./IdbFileEntry";
 import { IdbFileSystem } from "./IdbFileSystem";
 import { IdbObject } from "./IdbObject";
 
-const FILE_STORE = "entries";
+const ENTRY_STORE = "entries";
+const CONTENT_STORE = "contents";
 
 const indexedDB: IDBFactory =
   window.indexedDB || window.mozIndexedDB || window.msIndexedDB;
@@ -65,23 +69,19 @@ export class Idb {
 
     const self = this;
     return new Promise<void>((resolve, reject) => {
-      // TODO: FF 12.0a1 isn't liking a db name with : in it.
       const request = indexedDB.open(
         dbName.replace(":", "_") /*, 1 /*version*/
       );
       request.onupgradeneeded = function(ev) {
-        // First open was called or higher db version was used.
-
-        // console.log('onupgradeneeded: oldVersion:' + e.oldVersion,
-        //           'newVersion:' + e.newVersion);
         const request = ev.target as IDBRequest;
         self.db = request.result;
         self.db.onerror = self.onError;
 
-        if (!self.db.objectStoreNames.contains(FILE_STORE)) {
-          self.db.createObjectStore(
-            FILE_STORE /*,{keyPath: 'id', autoIncrement: true}*/
-          );
+        if (!self.db.objectStoreNames.contains(ENTRY_STORE)) {
+          self.db.createObjectStore(ENTRY_STORE);
+        }
+        if (!self.db.objectStoreNames.contains(CONTENT_STORE)) {
+          self.db.createObjectStore(CONTENT_STORE);
         }
       };
       request.onsuccess = function(e) {
@@ -105,37 +105,69 @@ export class Idb {
 
   drop() {
     return new Promise<void>((resolve, reject) => {
-      if (!this.db) {
-        resolve();
-      }
-
       const dbName = this.db.name;
       const request = indexedDB.deleteDatabase(dbName);
       request.onerror = function(ev) {
         reject(ev);
       };
-      request.onsuccess = function(ev) {};
+      request.onsuccess = function(ev) {
+        resolve();
+      };
 
       this.close();
     });
   }
 
-  get(fullPath: string) {
+  getEntry(fullPath: string) {
     return new Promise<IdbObject>((resolve, reject) => {
-      const tx = this.db.transaction([FILE_STORE], "readonly");
-      //const request = tx.objectStore(FILE_STORE_).get(fullPath);
+      const tx = this.db.transaction([ENTRY_STORE], "readonly");
       const range = IDBKeyRange.bound(
         fullPath,
         fullPath + DIR_OPEN_BOUND,
         false,
         true
       );
-      const request = tx.objectStore(FILE_STORE).get(range);
       tx.onabort = function(ev) {
         reject(ev);
       };
-      tx.oncomplete = function(ev) {
+      tx.onerror = function(ev) {
+        reject(ev);
+      };
+      const request = tx.objectStore(ENTRY_STORE).get(range);
+      request.onerror = function(ev) {
+        reject(ev);
+      };
+      tx.oncomplete = function() {
         resolve(request.result);
+      };
+    });
+  }
+
+  getContent(fullPath: string) {
+    return new Promise<string | Blob>((resolve, reject) => {
+      const tx = this.db.transaction([CONTENT_STORE], "readonly");
+      const range = IDBKeyRange.bound(
+        fullPath,
+        fullPath + DIR_OPEN_BOUND,
+        false,
+        true
+      );
+      tx.onabort = function(ev) {
+        reject(ev);
+      };
+      tx.onerror = function(ev) {
+        reject(ev);
+      };
+      const request = tx.objectStore(CONTENT_STORE).get(range);
+      request.onerror = function(ev) {
+        reject(ev);
+      };
+      tx.oncomplete = function(ev) {
+        if (request.result != null) {
+          resolve(request.result);
+        } else {
+          resolve(Idb.SUPPORTS_BLOB ? EMPTY_BLOB : "");
+        }
       };
     });
   }
@@ -144,14 +176,8 @@ export class Idb {
     return new Promise<IdbEntry[]>((resolve, reject) => {
       let entries: IdbEntry[] = [];
 
-      //const range = IDBKeyRange.lowerBound(fullPath, true);
-      //const range = IDBKeyRange.upperBound(fullPath, true);
-
-      // Treat the root entry special. Querying it returns all entries because
-      // they match '/'.
       let range = null;
       if (fullPath != DIR_SEPARATOR) {
-        //console.log(fullPath + '/', fullPath + DIR_OPEN_BOUND)
         range = IDBKeyRange.bound(
           fullPath + DIR_SEPARATOR,
           fullPath + DIR_OPEN_BOUND,
@@ -160,11 +186,14 @@ export class Idb {
         );
       }
 
-      const tx = this.db.transaction([FILE_STORE], "readonly");
+      const tx = this.db.transaction([ENTRY_STORE], "readonly");
       tx.onabort = function(ev) {
         reject(ev);
       };
-      tx.oncomplete = function(ev) {
+      tx.onerror = function(ev) {
+        reject(ev);
+      };
+      tx.oncomplete = function() {
         // TODO: figure out how to do be range queries instead of filtering result
         // in memory :(
         entries = entries.filter(function(entry) {
@@ -192,37 +221,36 @@ export class Idb {
         resolve(entries);
       };
 
-      const request = tx.objectStore(FILE_STORE).openCursor(range);
       const filesystem = this.filesystem;
+      const request = tx.objectStore(ENTRY_STORE).openCursor(range);
+      request.onerror = function(ev) {
+        reject(ev);
+      };
       request.onsuccess = function(ev) {
         const cursor = <IDBCursorWithValue>(<IDBRequest>ev.target).result;
         if (cursor) {
-          const obj = cursor.value as IdbObject;
+          const entry = cursor.value as IdbObject;
 
           entries.push(
-            obj.isFile
+            entry.isFile
               ? new IdbFileEntry({
                   filesystem: filesystem,
-                  name: obj.name,
-                  fullPath: obj.fullPath,
-                  lastModifiedDate: new Date(obj.lastModified),
-                  file: Idb.SUPPORTS_BLOB
-                    ? blobToFile(
-                        [obj.content as Blob],
-                        obj.name,
-                        obj.lastModified
-                      )
-                    : base64ToFile(
-                        obj.content as string,
-                        obj.name,
-                        obj.lastModified
-                      )
+                  name: entry.name,
+                  fullPath: entry.fullPath,
+                  lastModifiedDate:
+                    entry.lastModified == null
+                      ? null
+                      : new Date(entry.lastModified),
+                  size: entry.size
                 })
               : new IdbDirectoryEntry({
                   filesystem: filesystem,
-                  name: obj.name,
-                  fullPath: obj.fullPath,
-                  lastModifiedDate: new Date(obj.lastModified)
+                  name: entry.name,
+                  fullPath: entry.fullPath,
+                  lastModifiedDate:
+                    entry.lastModified == null
+                      ? null
+                      : new Date(entry.lastModified)
                 })
           );
           cursor["continue"]();
@@ -233,11 +261,7 @@ export class Idb {
 
   delete(fullPath: string) {
     return new Promise<void>((resolve, reject) => {
-      if (!this.db) {
-        resolve();
-      }
-
-      const tx = this.db.transaction([FILE_STORE], "readwrite");
+      const tx = this.db.transaction([ENTRY_STORE], "readwrite");
       tx.onabort = function(ev) {
         reject(ev);
       };
@@ -245,32 +269,54 @@ export class Idb {
         resolve();
       };
 
-      //const request = tx.objectStore(FILE_STORE_).delete(fullPath);
       const range = IDBKeyRange.bound(
         fullPath,
         fullPath + DIR_OPEN_BOUND,
         false,
         true
       );
-      tx.objectStore(FILE_STORE)["delete"](range);
+      const request = tx.objectStore(ENTRY_STORE).delete(range);
+      request.onerror = function(ev) {
+        reject(ev);
+      };
     });
   }
 
-  put(obj: IdbObject) {
+  put(entry: IdbObject, content?: string | Blob) {
     return new Promise<IdbObject>((resolve, reject) => {
-      if (!this.db) {
-        resolve(null);
-      }
-
-      const tx = this.db.transaction([FILE_STORE], "readwrite");
+      let tx = this.db.transaction([ENTRY_STORE], "readwrite");
       tx.onabort = function(ev) {
         reject(ev);
       };
-      tx.oncomplete = function(ev) {
-        resolve(obj);
+      tx.onerror = function(ev) {
+        reject(ev);
       };
-
-      tx.objectStore(FILE_STORE).put(obj, obj.fullPath);
+      tx.oncomplete = function() {
+        if (content) {
+          tx = this.db.transaction([CONTENT_STORE], "readwrite");
+          tx.onabort = function(ev) {
+            reject(ev);
+          };
+          tx.onerror = function(ev) {
+            reject(ev);
+          };
+          tx.oncomplete = function() {
+            resolve(entry);
+          };
+          const contentReq = tx
+            .objectStore(CONTENT_STORE)
+            .put(content, entry.fullPath);
+          contentReq.onerror = function(ev) {
+            reject(ev);
+          };
+        } else {
+          resolve(entry);
+        }
+      };
+      const entryReq = tx.objectStore(ENTRY_STORE).put(entry, entry.fullPath);
+      entryReq.onerror = function(ev) {
+        reject(ev);
+      };
     });
   }
 }
