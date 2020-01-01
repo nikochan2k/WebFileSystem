@@ -13,9 +13,9 @@ import { IdbDirectoryReader } from "./IdbDirectoryReader";
 import { IdbEntry } from "./IdbEntry";
 import { IdbFileEntry } from "./IdbFileEntry";
 import { IdbFileSystem } from "./IdbFileSystem";
-import { IdbObject } from "./IdbObject";
 import { INVALID_MODIFICATION_ERR, NOT_FOUND_ERR } from "../FileError";
 import { WebFileSystemParams } from "../WebFileSystemParams";
+import { WebFileSystemObject } from "../WebFileSystemObject";
 
 export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
   public isFile = false;
@@ -31,14 +31,14 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
     return new IdbDirectoryReader(this);
   }
 
-  doCreateFile(
+  doCreateObject(
+    isFile: boolean,
     path: string,
-    successCallback: FileEntryCallback,
+    successCallback: FileEntryCallback | DirectoryEntryCallback,
     errorCallback?: ErrorCallback
   ) {
-    const newEntry: IdbObject = {
-      isFile: true,
-      isDirectory: false,
+    const newObj: WebFileSystemObject = {
+      isFile: isFile,
       name: path.split(DIR_SEPARATOR).pop(),
       fullPath: path,
       lastModified: Date.now(),
@@ -47,17 +47,29 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
 
     const idb = this.filesystem.idb;
     idb
-      .put(newEntry)
+      .put(newObj)
       .then(() => {
-        successCallback(
-          new IdbFileEntry({
-            filesystem: this.filesystem,
-            name: newEntry.name,
-            fullPath: newEntry.fullPath,
-            lastModifiedDate: new Date(newEntry.lastModified),
-            size: 0
-          })
-        );
+        if (isFile) {
+          (successCallback as FileEntryCallback)(
+            new IdbFileEntry({
+              filesystem: this.filesystem,
+              name: newObj.name,
+              fullPath: newObj.fullPath,
+              lastModifiedDate: new Date(newObj.lastModified),
+              size: 0
+            })
+          );
+        } else {
+          (successCallback as DirectoryEntryCallback)(
+            new IdbDirectoryEntry({
+              filesystem: this.filesystem,
+              name: newObj.name,
+              fullPath: newObj.fullPath,
+              lastModifiedDate: new Date(newObj.lastModified),
+              size: null
+            })
+          );
+        }
       })
       .catch(err => {
         onError(err, errorCallback);
@@ -74,7 +86,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
     const idb = this.filesystem.idb;
     idb
       .getEntry(path)
-      .then(entry => {
+      .then(obj => {
         if (!options) {
           options = {};
         }
@@ -82,69 +94,36 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
           successCallback = () => {};
         }
 
-        if (entry) {
+        if (obj) {
+          if (!obj.isFile) {
+            onError(INVALID_MODIFICATION_ERR, errorCallback);
+            return;
+          }
           if (options.create) {
             if (options.exclusive) {
               onError(INVALID_MODIFICATION_ERR, errorCallback);
               return;
             }
-            if (entry.isDirectory) {
-              onError(INVALID_MODIFICATION_ERR, errorCallback);
-              return;
-            }
 
-            this.doCreateFile(path, successCallback, errorCallback);
+            this.doCreateObject(true, path, successCallback, errorCallback);
           } else {
             successCallback(
               new IdbFileEntry({
                 filesystem: this.filesystem,
-                name: entry.name,
-                fullPath: entry.fullPath,
-                lastModifiedDate: new Date(entry.lastModified),
-                size: 0
+                name: obj.name,
+                fullPath: obj.fullPath,
+                lastModifiedDate: new Date(obj.lastModified),
+                size: obj.size
               })
             );
           }
         } else {
           if (options.create) {
-            this.doCreateFile(path, successCallback, errorCallback);
+            this.doCreateObject(true, path, successCallback, errorCallback);
           } else {
             onError(NOT_FOUND_ERR, errorCallback);
           }
         }
-      })
-      .catch(err => {
-        onError(err, errorCallback);
-      });
-  }
-
-  doCreateDirectory(
-    path: string,
-    successCallback: DirectoryEntryCallback,
-    errorCallback?: ErrorCallback
-  ) {
-    const newEntry: IdbObject = {
-      isFile: true,
-      isDirectory: false,
-      name: path.split(DIR_SEPARATOR).pop(),
-      fullPath: path,
-      lastModified: Date.now(),
-      size: null
-    };
-
-    const idb = this.filesystem.idb;
-    idb
-      .put(newEntry)
-      .then(() => {
-        successCallback(
-          new IdbDirectoryEntry({
-            filesystem: this.filesystem,
-            name: newEntry.name,
-            fullPath: newEntry.fullPath,
-            lastModifiedDate: new Date(newEntry.lastModified),
-            size: null
-          })
-        );
       })
       .catch(err => {
         onError(err, errorCallback);
@@ -163,7 +142,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
     const idb = this.filesystem.idb;
     idb
       .getEntry(path)
-      .then(entry => {
+      .then(obj => {
         if (!options) {
           options = {};
         }
@@ -171,32 +150,33 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
           successCallback = () => {};
         }
 
-        if (entry) {
+        if (obj) {
+          if (obj.isFile) {
+            onError(INVALID_MODIFICATION_ERR, errorCallback);
+            return;
+          }
+
           if (options.create) {
             if (options.exclusive) {
               onError(INVALID_MODIFICATION_ERR, errorCallback);
               return;
             }
-            if (entry.isFile) {
-              onError(INVALID_MODIFICATION_ERR, errorCallback);
-              return;
-            }
 
-            this.doCreateDirectory(path, successCallback, errorCallback);
+            this.doCreateObject(false, path, successCallback, errorCallback);
           } else {
             successCallback(
               new IdbDirectoryEntry({
                 filesystem: this.filesystem,
-                name: entry.name,
-                fullPath: entry.fullPath,
-                lastModifiedDate: new Date(entry.lastModified),
-                size: null
+                name: obj.name,
+                fullPath: obj.fullPath,
+                lastModifiedDate: new Date(obj.lastModified),
+                size: obj.size
               })
             );
           }
         } else {
           if (options.create) {
-            this.doCreateDirectory(path, successCallback, errorCallback);
+            this.doCreateObject(false, path, successCallback, errorCallback);
           } else {
             onError(NOT_FOUND_ERR, errorCallback);
           }

@@ -7,7 +7,7 @@ import { IdbDirectoryEntry } from "./IdbDirectoryEntry";
 import { IdbEntry } from "./IdbEntry";
 import { IdbFileEntry } from "./IdbFileEntry";
 import { IdbFileSystem } from "./IdbFileSystem";
-import { IdbObject } from "./IdbObject";
+import { WebFileSystemObject } from "../WebFileSystemObject";
 
 const ENTRY_STORE = "entries";
 const CONTENT_STORE = "contents";
@@ -116,7 +116,7 @@ export class Idb {
   }
 
   getEntry(fullPath: string) {
-    return new Promise<IdbObject>((resolve, reject) => {
+    return new Promise<WebFileSystemObject>((resolve, reject) => {
       const tx = this.db.transaction([ENTRY_STORE], "readonly");
       const range = IDBKeyRange.bound(
         fullPath,
@@ -226,29 +226,29 @@ export class Idb {
       request.onsuccess = function(ev) {
         const cursor = <IDBCursorWithValue>(<IDBRequest>ev.target).result;
         if (cursor) {
-          const entry = cursor.value as IdbObject;
+          const obj = cursor.value as WebFileSystemObject;
 
           entries.push(
-            entry.isFile
+            obj.isFile
               ? new IdbFileEntry({
                   filesystem: filesystem,
-                  name: entry.name,
-                  fullPath: entry.fullPath,
+                  name: obj.name,
+                  fullPath: obj.fullPath,
                   lastModifiedDate:
-                    entry.lastModified == null
+                    obj.lastModified == null
                       ? null
-                      : new Date(entry.lastModified),
-                  size: entry.size
+                      : new Date(obj.lastModified),
+                  size: obj.size
                 })
               : new IdbDirectoryEntry({
                   filesystem: filesystem,
-                  name: entry.name,
-                  fullPath: entry.fullPath,
+                  name: obj.name,
+                  fullPath: obj.fullPath,
                   lastModifiedDate:
-                    entry.lastModified == null
+                    obj.lastModified == null
                       ? null
-                      : new Date(entry.lastModified),
-                  size: null
+                      : new Date(obj.lastModified),
+                  size: obj.size
                 })
           );
           cursor.continue();
@@ -280,8 +280,8 @@ export class Idb {
     });
   }
 
-  put(entry: IdbObject, content?: string | Blob) {
-    return new Promise<IdbObject>((resolve, reject) => {
+  put(entry: WebFileSystemObject, content?: string | Blob) {
+    return new Promise<WebFileSystemObject>((resolve, reject) => {
       let tx = this.db.transaction([ENTRY_STORE], "readwrite");
       tx.onabort = function(ev) {
         reject(ev);

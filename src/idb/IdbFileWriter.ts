@@ -2,8 +2,7 @@ import { AbstractFileWriter } from "../AbstractFileWriter";
 import { FileWriter } from "../filewriter";
 import { Idb } from "./Idb";
 import { IdbFileEntry } from "./IdbFileEntry";
-import { IdbObject } from "./IdbObject";
-import { onError } from "../WebFileSystemUtil";
+import { WebFileSystemObject } from "../WebFileSystemObject";
 
 export class IdbFileWriter extends AbstractFileWriter implements FileWriter {
   constructor(private idbFileEntry: IdbFileEntry, public file: File) {
@@ -11,9 +10,8 @@ export class IdbFileWriter extends AbstractFileWriter implements FileWriter {
   }
 
   doWrite(file: File, onsuccess: () => void) {
-    const entry: IdbObject = {
+    const entry: WebFileSystemObject = {
       isFile: this.fileEntry.isFile,
-      isDirectory: this.fileEntry.isDirectory,
       name: this.fileEntry.name,
       fullPath: this.fileEntry.fullPath,
       lastModified: Date.now(),
@@ -21,7 +19,7 @@ export class IdbFileWriter extends AbstractFileWriter implements FileWriter {
     };
 
     const writeToIdb = (
-      entry: IdbObject,
+      entry: WebFileSystemObject,
       content: string | Blob,
       onsuccess: () => void
     ) => {
