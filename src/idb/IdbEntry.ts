@@ -52,7 +52,7 @@ export abstract class IdbEntry implements Entry {
     successCallback: VoidCallback,
     errorCallback?: ErrorCallback | undefined
   ): void {
-    this.remove(successCallback, errorCallback);
+    this.remove(successCallback, errorCallback); // TODO
   }
 
   abstract getMetadata(

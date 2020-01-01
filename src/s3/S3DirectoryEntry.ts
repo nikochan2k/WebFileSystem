@@ -87,7 +87,7 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
       options = {};
     }
     if (!successCallback) {
-      successCallback = entry => {};
+      successCallback = () => {};
     }
 
     path = resolveToFullPath(this.fullPath, path);
@@ -95,12 +95,13 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
     this.doGetFile(
       key,
       entry => {
+        if (entry.isDirectory) {
+          onError(INVALID_MODIFICATION_ERR, errorCallback);
+          return;
+        }
+
         if (options.create) {
           if (options.exclusive) {
-            onError(INVALID_MODIFICATION_ERR, errorCallback);
-            return;
-          }
-          if (entry.isDirectory) {
             onError(INVALID_MODIFICATION_ERR, errorCallback);
             return;
           }
@@ -126,6 +127,11 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
     successCallback?: DirectoryEntryCallback,
     errorCallback?: ErrorCallback
   ): void {
+    if (!successCallback) {
+      successCallback = () => {};
+    }
+
+    // TODO incomplete
     path = resolveToFullPath(this.fullPath, path);
     const name = path.split(DIR_SEPARATOR).pop();
     successCallback(

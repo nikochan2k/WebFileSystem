@@ -11,7 +11,6 @@ export class IdbFileWriter extends AbstractFileWriter implements FileWriter {
 
   doWrite(file: File, onsuccess: () => void) {
     const entry: WebFileSystemObject = {
-      isFile: this.fileEntry.isFile,
       name: this.fileEntry.name,
       fullPath: this.fileEntry.fullPath,
       lastModified: Date.now(),

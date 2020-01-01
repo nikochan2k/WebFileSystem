@@ -38,11 +38,10 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
     errorCallback?: ErrorCallback
   ) {
     const newObj: WebFileSystemObject = {
-      isFile: isFile,
       name: path.split(DIR_SEPARATOR).pop(),
       fullPath: path,
       lastModified: Date.now(),
-      size: 0
+      size: isFile ? 0 : null
     };
 
     const idb = this.filesystem.idb;
@@ -56,7 +55,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
               name: newObj.name,
               fullPath: newObj.fullPath,
               lastModifiedDate: new Date(newObj.lastModified),
-              size: 0
+              size: newObj.size
             })
           );
         } else {
@@ -66,7 +65,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
               name: newObj.name,
               fullPath: newObj.fullPath,
               lastModifiedDate: new Date(newObj.lastModified),
-              size: null
+              size: newObj.size
             })
           );
         }
@@ -95,7 +94,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
         }
 
         if (obj) {
-          if (!obj.isFile) {
+          if (obj.size == null) {
             onError(INVALID_MODIFICATION_ERR, errorCallback);
             return;
           }
@@ -151,7 +150,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
         }
 
         if (obj) {
-          if (obj.isFile) {
+          if (obj.size != null) {
             onError(INVALID_MODIFICATION_ERR, errorCallback);
             return;
           }
