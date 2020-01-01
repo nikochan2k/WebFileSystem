@@ -10,7 +10,7 @@ import {
   VoidCallback
 } from "../filesystem";
 import { getKey } from "./S3Util";
-import { NOT_FOUND_ERR } from "../FileError";
+import { NOT_FOUND_ERR, INVALID_MODIFICATION_ERR } from "../FileError";
 import { PutObjectRequest } from "aws-sdk/clients/s3";
 import { resolveToFullPath, onError } from "../WebFileSystemUtil";
 import { S3DirectoryReader } from "./S3DirectoryReader";
@@ -56,32 +56,60 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
     );
   }
 
+  doCrateFile(
+    key: string,
+    successCallback?: FileEntryCallback,
+    errorCallback?: ErrorCallback
+  ) {
+    const filesystem = this.filesystem;
+    const request: PutObjectRequest = {
+      Bucket: filesystem.bucket,
+      Key: key,
+      Body: "",
+      ContentType: "application/octet-stream"
+    };
+    filesystem.s3.putObject(request, err => {
+      if (err) {
+        errorCallback(err);
+        return;
+      }
+      this.doGetFile(key, successCallback, errorCallback);
+    });
+  }
+
   getFile(
     path: string,
     options?: Flags,
     successCallback?: FileEntryCallback,
     errorCallback?: ErrorCallback
   ): void {
+    if (!options) {
+      options = {};
+    }
+
     path = resolveToFullPath(this.fullPath, path);
     const key = getKey(path);
-    if (options && options.create) {
-      const filesystem = this.filesystem;
-      const request: PutObjectRequest = {
-        Bucket: filesystem.bucket,
-        Key: key,
-        Body: "",
-        ContentType: "application/octet-stream"
-      };
-      filesystem.s3.putObject(request, err => {
-        if (err) {
-          errorCallback(err);
-          return;
+    this.doGetFile(
+      key,
+      entry => {
+        if (options.create) {
+          if (options.exclusive) {
+            onError(INVALID_MODIFICATION_ERR, errorCallback);
+          } else {
+            this.doCrateFile(key, successCallback, errorCallback);
+          }
+        } else {
+          successCallback(entry);
         }
-        this.doGetFile(key, successCallback, errorCallback);
-      });
-    } else {
-      this.doGetFile(key, successCallback, errorCallback);
-    }
+      },
+      err => {
+        if (err === NOT_FOUND_ERR && options.create) {
+          this.doCrateFile(key, successCallback, errorCallback);
+        } else {
+          onError(err, errorCallback);
+        }
+      }
+    );
   }
 
   getDirectory(

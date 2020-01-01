@@ -62,7 +62,8 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
               isDirectory: false,
               name: path.split(DIR_SEPARATOR).pop(),
               fullPath: path,
-              lastModified: Date.now()
+              lastModified: Date.now(),
+              size: 0
             };
 
             idb

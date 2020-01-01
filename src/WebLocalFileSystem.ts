@@ -19,7 +19,7 @@ export class WebLocalFileSystem implements LocalFileSystem {
 
   constructor(bucket: string, provider?: string, options?: any) {
     if (!provider) {
-      this.constructNativeFileSystem();
+      this.constructDefaultFileSystem();
       if (this.localFileSystem.requestFileSystem) {
         return;
       }
@@ -27,8 +27,8 @@ export class WebLocalFileSystem implements LocalFileSystem {
     }
 
     switch (provider) {
-      case "native":
-        this.constructNativeFileSystem();
+      case "default":
+        this.constructDefaultFileSystem();
         return;
       case "idb":
         this.localFileSystem = new IdbLocalFileSystem(bucket);
@@ -41,7 +41,7 @@ export class WebLocalFileSystem implements LocalFileSystem {
     throw new Error(`Illegal provider: ${provider}`);
   }
 
-  private constructNativeFileSystem() {
+  private constructDefaultFileSystem() {
     this.localFileSystem.requestFileSystem =
       window.requestFileSystem || window.webkitRequestFileSystem;
     this.localFileSystem.resolveLocalFileSystemURL =

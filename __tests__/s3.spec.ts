@@ -44,7 +44,7 @@ test("add empty file", async done => {
 });
 
 test("add text file", async done => {
-  const fileEntry = await fs.root.getFile("test.txt", {
+  let fileEntry = await fs.root.getFile("test.txt", {
     create: true,
     exclusive: true
   });
@@ -53,18 +53,30 @@ test("add text file", async done => {
   expect(fileEntry.isDirectory).toBe(false);
   expect(fileEntry.isFile).toBe(true);
 
-  const writer = await fileEntry.createWriter();
+  let writer = await fileEntry.createWriter();
   await writer.write(new Blob(["hoge"], { type: "text/plain" }));
-
+  expect(writer.position).toBe(4);
   let file = await fileEntry.file();
   expect(file.size).toBe(4);
 
   await writer.write(new Blob(["fuga"], { type: "text/plain" }));
+  expect(writer.position).toBe(8);
   file = await fileEntry.file();
   expect(file.size).toBe(8);
 
-  const reader = new FileReader();
+  try {
+    fileEntry = await fs.root.getFile("test.txt", {
+      create: true,
+      exclusive: true
+    });
+    fail();
+  } catch (e) {}
+  fileEntry = await fs.root.getFile("test.txt");
+  file = await fileEntry.file();
+  expect(file.size).toBe(8);
+
   const str = await new Promise<string>(resolve => {
+    const reader = new FileReader();
     reader.addEventListener("loadend", e => {
       const text = (e.srcElement as any).result;
       resolve(text);
