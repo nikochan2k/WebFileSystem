@@ -27,7 +27,7 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
 
   doGetFile(
     key: string,
-    successCallback?: FileEntryCallback,
+    successCallback: FileEntryCallback,
     errorCallback?: ErrorCallback
   ) {
     const filesystem = this.filesystem;
@@ -40,7 +40,7 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
           } else {
             onError(err, errorCallback);
           }
-        } else if (successCallback) {
+        } else {
           const name = key.split(DIR_SEPARATOR).pop();
           successCallback(
             new S3FileEntry({
@@ -58,7 +58,7 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
 
   doCrateFile(
     key: string,
-    successCallback?: FileEntryCallback,
+    successCallback: FileEntryCallback,
     errorCallback?: ErrorCallback
   ) {
     const filesystem = this.filesystem;
@@ -86,6 +86,9 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
     if (!options) {
       options = {};
     }
+    if (!successCallback) {
+      successCallback = entry => {};
+    }
 
     path = resolveToFullPath(this.fullPath, path);
     const key = getKey(path);
@@ -95,9 +98,14 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
         if (options.create) {
           if (options.exclusive) {
             onError(INVALID_MODIFICATION_ERR, errorCallback);
-          } else {
-            this.doCrateFile(key, successCallback, errorCallback);
+            return;
           }
+          if (entry.isDirectory) {
+            onError(INVALID_MODIFICATION_ERR, errorCallback);
+            return;
+          }
+
+          this.doCrateFile(key, successCallback, errorCallback);
         } else {
           successCallback(entry);
         }
