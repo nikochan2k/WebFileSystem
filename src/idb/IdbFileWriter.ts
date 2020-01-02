@@ -4,9 +4,10 @@ import { Idb } from "./Idb";
 import { IdbFileEntry } from "./IdbFileEntry";
 import { WebFileSystemObject } from "../WebFileSystemObject";
 
-export class IdbFileWriter extends AbstractFileWriter implements FileWriter {
-  constructor(private idbFileEntry: IdbFileEntry, public file: File) {
-    super(idbFileEntry);
+export class IdbFileWriter extends AbstractFileWriter<IdbFileEntry>
+  implements FileWriter {
+  constructor(idbFileEntry: IdbFileEntry, file: File) {
+    super(idbFileEntry, file);
   }
 
   doWrite(file: File, onsuccess: () => void) {
@@ -23,7 +24,7 @@ export class IdbFileWriter extends AbstractFileWriter implements FileWriter {
       content: string | Blob,
       onsuccess: () => void
     ) => {
-      this.idbFileEntry.filesystem.idb
+      this.fileEntry.filesystem.idb
         .put(entry, content)
         .then(() => {
           onsuccess();

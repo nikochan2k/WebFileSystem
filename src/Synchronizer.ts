@@ -19,14 +19,16 @@ export class Synchronizer {
   async transfer(local: FileEntryAsync, remote: FileEntryAsync) {
     const file = await local.file();
     const writer = await remote.createWriter();
-    writer.write(file);
+    await writer.write(file);
+    const remoteMetadata = await remote.getMetadata();
+    await local.setMetadata(remoteMetadata);
   }
 
   async synchronizeEntries(
     localEntries: EntryAsync[],
     remoteEntries: EntryAsync[]
   ) {
-    const pendingLocalEntries: EntryAsync[] = [];
+    const newLocalEntries: EntryAsync[] = [];
     outer: do {
       while (0 < localEntries.length) {
         const localEntry = localEntries.shift();
@@ -84,11 +86,11 @@ export class Synchronizer {
             continue outer;
           }
         }
-        pendingLocalEntries.push(localEntry);
+        newLocalEntries.push(localEntry);
       }
     } while (false);
 
-    for (const localEntry of pendingLocalEntries) {
+    for (const localEntry of newLocalEntries) {
       if (localEntry.isFile) {
         const remoteEntry = await this.remote.root.getFile(
           localEntry.fullPath,

@@ -7,16 +7,17 @@ import {
   CompleteMultipartUploadRequest
 } from "aws-sdk/clients/s3";
 
-export class S3FileWriter extends AbstractFileWriter implements FileWriter {
-  constructor(private s3FileEntry: S3FileEntry, public file: File) {
-    super(s3FileEntry);
+export class S3FileWriter extends AbstractFileWriter<S3FileEntry>
+  implements FileWriter {
+  constructor(s3FileEntry: S3FileEntry, file: File) {
+    super(s3FileEntry, file);
   }
 
   doWrite(file: File, onsuccess: () => void) {
-    const filesystem = this.s3FileEntry.filesystem;
+    const filesystem = this.fileEntry.filesystem;
     const s3 = filesystem.s3;
     const bucket = filesystem.bucket;
-    const key = getKey(this.s3FileEntry.fullPath);
+    const key = getKey(this.fileEntry.fullPath);
     s3.createMultipartUpload(
       {
         Bucket: bucket,
@@ -92,6 +93,10 @@ export class S3FileWriter extends AbstractFileWriter implements FileWriter {
 
           await s3.completeMultipartUpload(doneParams).promise();
 
+          const data = await s3
+            .headObject({ Bucket: bucket, Key: key })
+            .promise();
+          this.fileEntry.params.lastModified = data.LastModified.getTime();
           onsuccess();
           if (this.onwriteend) {
             const evt: ProgressEvent<EventTarget> = {

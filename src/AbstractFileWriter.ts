@@ -3,11 +3,11 @@ import { FileEntry } from "./filesystem";
 import { FileWriter } from "./filewriter";
 import { NOT_IMPLEMENTED_ERR } from "./FileError";
 
-export abstract class AbstractFileWriter implements FileWriter {
-  constructor(protected fileEntry: FileEntry) {}
+export abstract class AbstractFileWriter<T extends FileEntry>
+  implements FileWriter {
+  constructor(protected fileEntry: T, public file: File) {}
 
   position = 0;
-  abstract file: File;
 
   get length() {
     return this.file.size;
