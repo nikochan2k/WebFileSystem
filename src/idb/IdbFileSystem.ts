@@ -6,7 +6,9 @@ import { IdbDirectoryEntry } from "./IdbDirectoryEntry";
 export class IdbFileSystem implements FileSystem {
   isLocal = true;
 
-  name: string;
+  get name() {
+    return this.idb.db.name;
+  }
   root: IdbDirectoryEntry;
 
   constructor(public idb: Idb) {
@@ -14,9 +16,8 @@ export class IdbFileSystem implements FileSystem {
       filesystem: this,
       name: "",
       fullPath: DIR_SEPARATOR,
-      lastModifiedDate: null,
-      size: null,
-      hash: null
+      lastModified: null,
+      size: null
     });
   }
 }

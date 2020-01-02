@@ -19,7 +19,7 @@ export class Idb {
   static SUPPORTS_BLOB = true;
 
   private initialized = false;
-  private db: IDBDatabase;
+  db: IDBDatabase;
   filesystem: IdbFileSystem;
 
   constructor() {
@@ -232,25 +232,11 @@ export class Idb {
             obj.size != null
               ? new IdbFileEntry({
                   filesystem: filesystem,
-                  name: obj.name,
-                  fullPath: obj.fullPath,
-                  lastModifiedDate:
-                    obj.lastModified == null
-                      ? null
-                      : new Date(obj.lastModified),
-                  size: obj.size,
-                  hash: obj.hash
+                  ...obj
                 })
               : new IdbDirectoryEntry({
                   filesystem: filesystem,
-                  name: obj.name,
-                  fullPath: obj.fullPath,
-                  lastModifiedDate:
-                    obj.lastModified == null
-                      ? null
-                      : new Date(obj.lastModified),
-                  size: obj.size,
-                  hash: obj.hash
+                  ...obj
                 })
           );
           cursor.continue();

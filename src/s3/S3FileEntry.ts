@@ -4,7 +4,6 @@ import {
   FileCallback,
   FileEntry,
   FileWriterCallback,
-  MetadataCallback,
   VoidCallback
 } from "../filesystem";
 import { getKey } from "./S3Util";
@@ -20,14 +19,13 @@ export interface S3FileParams extends WebFileSystemParams<S3FileSystem> {
 export class S3FileEntry extends S3Entry implements FileEntry {
   isFile = true;
   isDirectory = false;
-  size: number;
-  hash: string;
+  get size() {
+    return this.params.size;
+  }
   private s3FileWriter: S3FileWriter;
 
   constructor(params: S3FileParams) {
     super(params);
-    this.size = params.size;
-    this.hash = params.hash;
   }
 
   createWriter(
@@ -55,7 +53,7 @@ export class S3FileEntry extends S3Entry implements FileEntry {
         if (err) {
           onError(err, errorCallback);
         } else {
-          this.size = data.ContentLength;
+          this.params.size = data.ContentLength;
           const body = data.Body;
           if (
             body instanceof Buffer ||
@@ -66,7 +64,7 @@ export class S3FileEntry extends S3Entry implements FileEntry {
             const file = blobToFile(
               [body],
               this.name,
-              this.lastModifiedDate.getTime(),
+              this.params.lastModified,
               data.ContentType
             );
             this.s3FileWriter = new S3FileWriter(this, file);
@@ -77,17 +75,6 @@ export class S3FileEntry extends S3Entry implements FileEntry {
         }
       }
     );
-  }
-
-  getMetadata(
-    successCallback: MetadataCallback,
-    errorCallback?: ErrorCallback
-  ): void {
-    successCallback({
-      modificationTime: this.lastModifiedDate,
-      size: this.size,
-      hash: this.hash
-    });
   }
 
   remove(successCallback: VoidCallback, errorCallback?: ErrorCallback): void {

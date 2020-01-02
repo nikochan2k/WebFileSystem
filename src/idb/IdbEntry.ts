@@ -16,15 +16,20 @@ import { WebFileSystemParams } from "../WebFileSystemParams";
 export abstract class IdbEntry implements Entry {
   abstract isFile: boolean;
   abstract isDirectory: boolean;
-  filesystem: IdbFileSystem;
-  name: string;
-  fullPath: string;
 
-  constructor(params: WebFileSystemParams<IdbFileSystem>) {
-    this.filesystem = params.filesystem;
-    this.name = params.name;
-    this.fullPath = params.fullPath;
+  get filesystem() {
+    return this.params.filesystem;
   }
+
+  get name() {
+    return this.params.name;
+  }
+
+  get fullPath() {
+    return this.params.fullPath;
+  }
+
+  constructor(public params: WebFileSystemParams<IdbFileSystem>) {}
 
   remove(
     successCallback: VoidCallback,
@@ -55,10 +60,18 @@ export abstract class IdbEntry implements Entry {
     this.remove(successCallback, errorCallback); // TODO
   }
 
-  abstract getMetadata(
+  getMetadata(
     successCallback: MetadataCallback,
-    errorCallback?: ErrorCallback | undefined
-  ): void;
+    errorCallback?: ErrorCallback
+  ): void {
+    successCallback({
+      modificationTime:
+        this.params.lastModified == null
+          ? null
+          : new Date(this.params.lastModified),
+      size: this.params.size
+    });
+  }
 
   moveTo(
     parent: DirectoryEntry,

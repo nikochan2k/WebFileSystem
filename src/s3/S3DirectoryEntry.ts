@@ -44,12 +44,11 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
           const name = key.split(DIR_SEPARATOR).pop();
           successCallback(
             new S3FileEntry({
-              filesystem: filesystem,
+              filesystem: this.filesystem,
               name: name,
               fullPath: DIR_SEPARATOR + key,
-              lastModifiedDate: data.LastModified,
-              size: data.ContentLength,
-              hash: data.ETag
+              lastModified: data.LastModified.getTime(),
+              size: data.ContentLength
             })
           );
         }
@@ -140,7 +139,7 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
         filesystem: this.filesystem,
         name: name,
         fullPath: path,
-        lastModifiedDate: null,
+        lastModified: null,
         size: null,
         hash: null
       })
@@ -156,16 +155,5 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
     errorCallback?: ErrorCallback
   ): void {
     this.remove(successCallback); // TODO
-  }
-
-  getMetadata(
-    successCallback: MetadataCallback,
-    errorCallback?: ErrorCallback
-  ): void {
-    successCallback({
-      modificationTime: this.lastModifiedDate,
-      size: null,
-      hash: null
-    });
   }
 }

@@ -80,10 +80,7 @@ export interface Metadata {
    */
   size: number;
 
-  /**
-   * The hash of the file.
-   */
-  hash: string;
+  [key: string]: any;
 }
 
 export interface Flags {
@@ -314,11 +311,6 @@ export interface FileEntry extends Entry {
    * The size of the file.
    */
   size: number;
-
-  /**
-   * The hash value of the file.
-   */
-  hash: string;
 
   /**
    * Creates a new FileWriter associated with the file that this FileEntry represents.

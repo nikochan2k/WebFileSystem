@@ -1,10 +1,7 @@
 import { FileSystem } from "./filesystem";
+import { WebFileSystemObject } from "./WebFileSystemObject";
 
-export interface WebFileSystemParams<FS extends FileSystem> {
+export interface WebFileSystemParams<FS extends FileSystem>
+  extends WebFileSystemObject {
   filesystem: FS;
-  name: string;
-  fullPath: string;
-  lastModifiedDate: Date;
-  size: number;
-  hash: string;
 }

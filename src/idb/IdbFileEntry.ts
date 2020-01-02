@@ -3,8 +3,7 @@ import {
   ErrorCallback,
   FileCallback,
   FileEntry,
-  FileWriterCallback,
-  MetadataCallback
+  FileWriterCallback
 } from "../filesystem";
 import { Idb } from "./Idb";
 import { IdbEntry } from "./IdbEntry";
@@ -15,15 +14,13 @@ import { WebFileSystemParams } from "../WebFileSystemParams";
 export class IdbFileEntry extends IdbEntry implements FileEntry {
   isFile = true;
   isDirectory = false;
-  lastModifiedDate: Date;
-  size: number;
-  hash: string;
+  get size() {
+    return this.params.size;
+  }
   private idbFileWriter: IdbFileWriter;
 
   constructor(params: WebFileSystemParams<IdbFileSystem>) {
     super(params);
-    this.lastModifiedDate = params.lastModifiedDate;
-    this.size = params.size;
   }
 
   createWriter(
@@ -68,16 +65,5 @@ export class IdbFileEntry extends IdbEntry implements FileEntry {
       .catch(error => {
         onError(error, errorCallback);
       });
-  }
-
-  getMetadata(
-    successCallback: MetadataCallback,
-    errorCallback?: ErrorCallback
-  ): void {
-    successCallback({
-      modificationTime: this.lastModifiedDate,
-      size: this.size,
-      hash: this.hash
-    });
   }
 }

@@ -14,22 +14,30 @@ import { WebFileSystemParams } from "../WebFileSystemParams";
 export abstract class S3Entry implements Entry {
   abstract isFile: boolean;
   abstract isDirectory: boolean;
-  name: string;
-  fullPath: string;
-  filesystem: S3FileSystem;
-  lastModifiedDate: Date;
-
-  constructor(params: WebFileSystemParams<S3FileSystem>) {
-    this.filesystem = params.filesystem;
-    this.name = params.name;
-    this.fullPath = params.fullPath;
-    this.lastModifiedDate = params.lastModifiedDate;
+  get name() {
+    return this.params.name;
+  }
+  get fullPath() {
+    return this.params.fullPath;
+  }
+  get filesystem() {
+    return this.params.filesystem;
   }
 
-  abstract getMetadata(
+  constructor(public params: WebFileSystemParams<S3FileSystem>) {}
+
+  getMetadata(
     successCallback: MetadataCallback,
     errorCallback?: ErrorCallback
-  ): void;
+  ): void {
+    successCallback({
+      modificationTime:
+        this.params.lastModified == null
+          ? null
+          : new Date(this.params.lastModified),
+      size: this.params.size
+    });
+  }
 
   moveTo(
     parent: DirectoryEntry,

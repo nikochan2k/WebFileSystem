@@ -36,9 +36,8 @@ export class S3DirectoryReader implements DirectoryReader {
             filesystem: filesystem,
             name: name,
             fullPath: (fullPath === "/" ? "" : fullPath) + DIR_SEPARATOR + name,
-            lastModifiedDate: null,
-            size: null,
-            hash: null
+            lastModified: null,
+            size: null
           });
           entries.push(newDirEntry);
         }
@@ -49,9 +48,8 @@ export class S3DirectoryReader implements DirectoryReader {
             filesystem: filesystem,
             name: name,
             fullPath: (fullPath === "/" ? "" : fullPath) + DIR_SEPARATOR + name,
-            lastModifiedDate: content.LastModified,
-            size: content.Size,
-            hash: content.ETag
+            lastModified: content.LastModified.getTime(),
+            size: content.Size
           });
           entries.push(newFileEntry);
         }

@@ -20,11 +20,9 @@ import { WebFileSystemObject } from "../WebFileSystemObject";
 export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
   public isFile = false;
   public isDirectory = true;
-  public lastModifiedDate: Date;
 
   constructor(params: WebFileSystemParams<IdbFileSystem>) {
     super(params);
-    this.lastModifiedDate = params.lastModifiedDate;
   }
 
   createReader(): DirectoryReader {
@@ -53,22 +51,14 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
           (successCallback as FileEntryCallback)(
             new IdbFileEntry({
               filesystem: this.filesystem,
-              name: newObj.name,
-              fullPath: newObj.fullPath,
-              lastModifiedDate: new Date(newObj.lastModified),
-              size: newObj.size,
-              hash: newObj.hash
+              ...newObj
             })
           );
         } else {
           (successCallback as DirectoryEntryCallback)(
             new IdbDirectoryEntry({
               filesystem: this.filesystem,
-              name: newObj.name,
-              fullPath: newObj.fullPath,
-              lastModifiedDate: new Date(newObj.lastModified),
-              size: null,
-              hash: null
+              ...newObj
             })
           );
         }
@@ -112,11 +102,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
             successCallback(
               new IdbFileEntry({
                 filesystem: this.filesystem,
-                name: obj.name,
-                fullPath: obj.fullPath,
-                lastModifiedDate: new Date(obj.lastModified),
-                size: obj.size,
-                hash: obj.hash
+                ...obj
               })
             );
           }
@@ -170,11 +156,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
             successCallback(
               new IdbDirectoryEntry({
                 filesystem: this.filesystem,
-                name: obj.name,
-                fullPath: obj.fullPath,
-                lastModifiedDate: new Date(obj.lastModified),
-                size: null,
-                hash: null
+                ...obj
               })
             );
           }
@@ -189,16 +171,5 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
       .catch(err => {
         onError(err, errorCallback);
       });
-  }
-
-  getMetadata(
-    successCallback: MetadataCallback,
-    errorCallback?: ErrorCallback
-  ): void {
-    successCallback({
-      modificationTime: this.lastModifiedDate,
-      size: null,
-      hash: null
-    });
   }
 }

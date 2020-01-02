@@ -3,5 +3,5 @@ export interface WebFileSystemObject {
   fullPath: string;
   lastModified: number;
   size: number;
-  hash: string;
+  [key: string]: any;
 }
