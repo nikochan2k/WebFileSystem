@@ -46,6 +46,12 @@ export class S3FileEntry extends S3Entry implements FileEntry {
       successCallback(this.s3FileWriter.file);
       return;
     }
+    if (this.size === 0) {
+      const file = blobToFile([], this.name, this.params.lastModified);
+      this.s3FileWriter = new S3FileWriter(this, file);
+      successCallback(file);
+      return;
+    }
     const filesystem = this.filesystem;
     filesystem.s3.getObject(
       { Bucket: filesystem.bucket, Key: getKey(this.fullPath) },

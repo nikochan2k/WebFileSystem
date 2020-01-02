@@ -44,7 +44,12 @@ export class IdbFileEntry extends IdbEntry implements FileEntry {
       successCallback(this.idbFileWriter.file);
       return;
     }
-
+    if (this.size === 0) {
+      const file = blobToFile([], this.name, this.params.lastModified);
+      this.idbFileWriter = new IdbFileWriter(this, file);
+      successCallback(file);
+      return;
+    }
     const idb = this.filesystem.idb;
     idb
       .getEntry(this.fullPath)

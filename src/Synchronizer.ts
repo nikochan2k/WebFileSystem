@@ -9,18 +9,16 @@ export class Synchronizer {
   constructor(
     public local: FileSystemAsync,
     public remote: FileSystemAsync,
-    public mirror = false,
-    public toleranceMillis = 60 * 1000
+    public mirror = false
   ) {
     if (!local.isLocal) {
       throw new Error("local filesystem is not local");
     }
   }
 
-  async copy(from: FileEntryAsync, to: FileEntryAsync) {
-    const file = await from.file();
-    const writer = await to.createWriter();
-    writer.truncate(0);
+  async transfer(local: FileEntryAsync, remote: FileEntryAsync) {
+    const file = await local.file();
+    const writer = await remote.createWriter();
     writer.write(file);
   }
 
@@ -39,7 +37,7 @@ export class Synchronizer {
               localEntry.isFile !== remoteEntry.isFile ||
               localEntry.isDirectory !== remoteEntry.isDirectory
             ) {
-              // prioritize source
+              // prioritize source entry
               if (remoteEntry.isFile) {
                 await remoteEntry.remove();
               } else {
@@ -56,20 +54,20 @@ export class Synchronizer {
               const remoteLastModified = remoteMeta.modificationTime.getTime();
               if (localLastModified === remoteLastModified) {
                 if (localMeta.size !== remoteMeta.size) {
-                  await this.copy(
+                  await this.transfer(
                     localEntry as FileEntryAsync,
                     remoteEntry as FileEntryAsync
                   );
                 }
               } else {
                 if (remoteLastModified < localLastModified) {
-                  await this.copy(
+                  await this.transfer(
                     localEntry as FileEntryAsync,
                     remoteEntry as FileEntryAsync
                   );
                 } else {
                   if (this.mirror) {
-                    await this.copy(
+                    await this.transfer(
                       remoteEntry as FileEntryAsync,
                       localEntry as FileEntryAsync
                     );
@@ -98,7 +96,7 @@ export class Synchronizer {
             create: true
           }
         );
-        await this.copy(
+        await this.transfer(
           localEntry as FileEntryAsync,
           remoteEntry as FileEntryAsync
         );
@@ -125,7 +123,7 @@ export class Synchronizer {
         const localEntry = await this.local.root.getFile(remoteEntry.fullPath, {
           create: true
         });
-        await this.copy(
+        await this.transfer(
           remoteEntry as FileEntryAsync,
           localEntry as FileEntryAsync
         );

@@ -99,17 +99,11 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
           onError(INVALID_MODIFICATION_ERR, errorCallback);
           return;
         }
-
-        if (options.create) {
-          if (options.exclusive) {
-            onError(INVALID_MODIFICATION_ERR, errorCallback);
-            return;
-          }
-
-          this.doCrateFile(key, successCallback, errorCallback);
-        } else {
-          successCallback(entry);
+        if (options.create && options.exclusive) {
+          onError(INVALID_MODIFICATION_ERR, errorCallback);
+          return;
         }
+        successCallback(entry);
       },
       err => {
         if (err === NOT_FOUND_ERR && options.create) {

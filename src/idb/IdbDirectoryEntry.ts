@@ -91,21 +91,16 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
             onError(INVALID_MODIFICATION_ERR, errorCallback);
             return;
           }
-          if (options.create) {
-            if (options.exclusive) {
-              onError(INVALID_MODIFICATION_ERR, errorCallback);
-              return;
-            }
-
-            this.doCreateObject(true, path, successCallback, errorCallback);
-          } else {
-            successCallback(
-              new IdbFileEntry({
-                filesystem: this.filesystem,
-                ...obj
-              })
-            );
+          if (options.create && options.exclusive) {
+            onError(INVALID_MODIFICATION_ERR, errorCallback);
+            return;
           }
+          successCallback(
+            new IdbFileEntry({
+              filesystem: this.filesystem,
+              ...obj
+            })
+          );
         } else {
           if (options.create) {
             this.doCreateObject(true, path, successCallback, errorCallback);
