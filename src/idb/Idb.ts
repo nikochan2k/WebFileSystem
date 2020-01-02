@@ -268,7 +268,7 @@ export class Idb {
     });
   }
 
-  put(entry: WebFileSystemObject, content?: string | Blob) {
+  put(obj: WebFileSystemObject, content?: string | Blob) {
     return new Promise<WebFileSystemObject>((resolve, reject) => {
       let tx = this.db.transaction([ENTRY_STORE], "readwrite");
       tx.onabort = function(ev) {
@@ -287,19 +287,19 @@ export class Idb {
             reject(ev);
           };
           tx.oncomplete = function() {
-            resolve(entry);
+            resolve(obj);
           };
           const contentReq = tx
             .objectStore(CONTENT_STORE)
-            .put(content, entry.fullPath);
+            .put(content, obj.fullPath);
           contentReq.onerror = function(ev) {
             reject(ev);
           };
         } else {
-          resolve(entry);
+          resolve(obj);
         }
       };
-      const entryReq = tx.objectStore(ENTRY_STORE).put(entry, entry.fullPath);
+      const entryReq = tx.objectStore(ENTRY_STORE).put(obj, obj.fullPath);
       entryReq.onerror = function(ev) {
         reject(ev);
       };

@@ -15,9 +15,6 @@ export class Synchronizer {
     if (!local.isLocal) {
       throw new Error("local filesystem is not local");
     }
-    if (remote.isLocal) {
-      throw new Error("local filesystem is not local");
-    }
   }
 
   async copy(from: FileEntryAsync, to: FileEntryAsync) {

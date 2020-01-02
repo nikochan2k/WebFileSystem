@@ -5,6 +5,7 @@ import {
   Entry,
   EntryCallback,
   ErrorCallback,
+  Metadata,
   MetadataCallback,
   VoidCallback
 } from "../filesystem";
@@ -12,6 +13,7 @@ import { IdbFileSystem } from "./IdbFileSystem";
 import { NOT_IMPLEMENTED_ERR } from "../FileError";
 import { onError } from "../WebFileSystemUtil";
 import { WebFileSystemParams } from "../WebFileSystemParams";
+import { WebFileSystemObject } from "../WebFileSystemObject";
 
 export abstract class IdbEntry implements Entry {
   abstract isFile: boolean;
@@ -71,6 +73,36 @@ export abstract class IdbEntry implements Entry {
           : new Date(this.params.lastModified),
       size: this.params.size
     });
+  }
+
+  setMetadata(
+    metadata: Metadata,
+    successCallback: VoidCallback,
+    errorCallback?: ErrorCallback
+  ): void {
+    const temp = { ...metadata };
+    delete temp["modificationTime"];
+    delete temp["size"];
+    const obj: WebFileSystemObject = {
+      ...temp,
+      name: this.name,
+      fullPath: this.fullPath,
+      lastModified:
+        metadata.modificationTime === undefined
+          ? this.params.lastModified
+          : metadata.modificationTime === null
+          ? null
+          : metadata.modificationTime.getTime(),
+      size: this.params.size
+    };
+    this.filesystem.idb
+      .put(obj)
+      .then(() => {
+        successCallback();
+      })
+      .catch(err => {
+        errorCallback(err);
+      });
   }
 
   moveTo(

@@ -43,6 +43,20 @@ export abstract class WebEntryAsync implements EntryAsync {
     });
   }
 
+  setMetadata(metadata: Metadata): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      this.entry.setMetadata(
+        metadata,
+        () => {
+          resolve();
+        },
+        error => {
+          reject(error);
+        }
+      );
+    });
+  }
+
   moveTo(parent: DirectoryEntryAsync, newName?: string): Promise<EntryAsync> {
     return new Promise<EntryAsync>((resolve, reject) => {
       this.entry.moveTo(

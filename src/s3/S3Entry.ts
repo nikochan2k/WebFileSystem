@@ -4,6 +4,7 @@ import {
   Entry,
   EntryCallback,
   ErrorCallback,
+  Metadata,
   MetadataCallback,
   VoidCallback
 } from "../filesystem";
@@ -37,6 +38,14 @@ export abstract class S3Entry implements Entry {
           : new Date(this.params.lastModified),
       size: this.params.size
     });
+  }
+
+  setMetadata(
+    metadata: Metadata,
+    successCallback: VoidCallback,
+    errorCallback?: ErrorCallback
+  ): void {
+    errorCallback(NOT_IMPLEMENTED_ERR);
   }
 
   moveTo(
