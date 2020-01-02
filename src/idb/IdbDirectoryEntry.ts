@@ -41,7 +41,8 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
       name: path.split(DIR_SEPARATOR).pop(),
       fullPath: path,
       lastModified: Date.now(),
-      size: isFile ? 0 : null
+      size: isFile ? 0 : null,
+      hash: null
     };
 
     const idb = this.filesystem.idb;
@@ -55,7 +56,8 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
               name: newObj.name,
               fullPath: newObj.fullPath,
               lastModifiedDate: new Date(newObj.lastModified),
-              size: newObj.size
+              size: newObj.size,
+              hash: newObj.hash
             })
           );
         } else {
@@ -65,7 +67,8 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
               name: newObj.name,
               fullPath: newObj.fullPath,
               lastModifiedDate: new Date(newObj.lastModified),
-              size: newObj.size
+              size: null,
+              hash: null
             })
           );
         }
@@ -112,7 +115,8 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
                 name: obj.name,
                 fullPath: obj.fullPath,
                 lastModifiedDate: new Date(obj.lastModified),
-                size: obj.size
+                size: obj.size,
+                hash: obj.hash
               })
             );
           }
@@ -169,7 +173,8 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
                 name: obj.name,
                 fullPath: obj.fullPath,
                 lastModifiedDate: new Date(obj.lastModified),
-                size: obj.size
+                size: null,
+                hash: null
               })
             );
           }
@@ -192,7 +197,8 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
   ): void {
     successCallback({
       modificationTime: this.lastModifiedDate,
-      size: null
+      size: null,
+      hash: null
     });
   }
 }

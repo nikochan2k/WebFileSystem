@@ -2,7 +2,10 @@ import { AbstractFileWriter } from "../AbstractFileWriter";
 import { FileWriter } from "../filewriter";
 import { getKey } from "./S3Util";
 import { S3FileEntry } from "./S3FileEntry";
-import { CompletedMultipartUpload } from "aws-sdk/clients/s3";
+import {
+  CompletedMultipartUpload,
+  CompleteMultipartUploadRequest
+} from "aws-sdk/clients/s3";
 
 export class S3FileWriter extends AbstractFileWriter implements FileWriter {
   constructor(private s3FileEntry: S3FileEntry, public file: File) {
@@ -80,7 +83,7 @@ export class S3FileWriter extends AbstractFileWriter implements FileWriter {
             });
           }
 
-          const doneParams = {
+          const doneParams: CompleteMultipartUploadRequest = {
             Bucket: filesystem.bucket,
             Key: key,
             MultipartUpload: multipartMap,

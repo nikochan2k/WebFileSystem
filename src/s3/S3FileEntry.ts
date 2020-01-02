@@ -21,11 +21,13 @@ export class S3FileEntry extends S3Entry implements FileEntry {
   isFile = true;
   isDirectory = false;
   size: number;
+  hash: string;
   private s3FileWriter: S3FileWriter;
 
   constructor(params: S3FileParams) {
     super(params);
     this.size = params.size;
+    this.hash = params.hash;
   }
 
   createWriter(
@@ -83,7 +85,8 @@ export class S3FileEntry extends S3Entry implements FileEntry {
   ): void {
     successCallback({
       modificationTime: this.lastModifiedDate,
-      size: this.size
+      size: this.size,
+      hash: this.hash
     });
   }
 

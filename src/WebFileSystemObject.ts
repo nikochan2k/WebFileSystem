@@ -1,6 +1,7 @@
 export interface WebFileSystemObject {
   name: string;
   fullPath: string;
-  lastModified?: number;
-  size?: number;
+  lastModified: number;
+  size: number;
+  hash: string;
 }

@@ -71,7 +71,6 @@ export interface LocalFileSystemAsync {
 export interface Metadata {
   /**
    * This is the time at which the file or directory was last modified.
-   * @readonly
    */
   modificationTime: Date;
 
@@ -80,6 +79,11 @@ export interface Metadata {
    * @readonly
    */
   size: number;
+
+  /**
+   * The hash of the file.
+   */
+  hash: string;
 }
 
 export interface Flags {
@@ -98,6 +102,11 @@ export interface Flags {
  * This interface represents a file system.
  */
 export interface FileSystem {
+  /**
+   * Local filesystem or not.
+   */
+  isLocal: boolean;
+
   /**
    * This is the name of the file system. The specifics of naming filesystems is unspecified, but a name must be unique across the list of exposed file systems.
    * @readonly
@@ -302,6 +311,16 @@ export interface DirectoryReader {
  */
 export interface FileEntry extends Entry {
   /**
+   * The size of the file.
+   */
+  size: number;
+
+  /**
+   * The hash value of the file.
+   */
+  hash: string;
+
+  /**
    * Creates a new FileWriter associated with the file that this FileEntry represents.
    * @param successCallback A callback that is called with the new FileWriter.
    * @param errorCallback A callback that is called when errors happen.
@@ -405,6 +424,11 @@ export interface ErrorCallback {
  * This interface represents a file system.
  */
 export interface FileSystemAsync {
+  /**
+   * Local filesystem or not.
+   */
+  isLocal: boolean;
+
   /**
    * This is the name of the file system. The specifics of naming filesystems is unspecified, but a name must be unique across the list of exposed file systems.
    */

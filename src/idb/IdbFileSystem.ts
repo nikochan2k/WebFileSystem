@@ -4,6 +4,8 @@ import { Idb } from "./Idb";
 import { IdbDirectoryEntry } from "./IdbDirectoryEntry";
 
 export class IdbFileSystem implements FileSystem {
+  isLocal = true;
+
   name: string;
   root: IdbDirectoryEntry;
 
@@ -13,7 +15,8 @@ export class IdbFileSystem implements FileSystem {
       name: "",
       fullPath: DIR_SEPARATOR,
       lastModifiedDate: null,
-      size: null
+      size: null,
+      hash: null
     });
   }
 }

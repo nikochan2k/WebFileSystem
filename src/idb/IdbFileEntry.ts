@@ -17,6 +17,7 @@ export class IdbFileEntry extends IdbEntry implements FileEntry {
   isDirectory = false;
   lastModifiedDate: Date;
   size: number;
+  hash: string;
   private idbFileWriter: IdbFileWriter;
 
   constructor(params: WebFileSystemParams<IdbFileSystem>) {
@@ -75,7 +76,8 @@ export class IdbFileEntry extends IdbEntry implements FileEntry {
   ): void {
     successCallback({
       modificationTime: this.lastModifiedDate,
-      size: this.size
+      size: this.size,
+      hash: this.hash
     });
   }
 }

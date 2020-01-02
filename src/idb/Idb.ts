@@ -229,7 +229,7 @@ export class Idb {
           const obj = cursor.value as WebFileSystemObject;
 
           entries.push(
-            obj.isFile
+            obj.size != null
               ? new IdbFileEntry({
                   filesystem: filesystem,
                   name: obj.name,
@@ -238,7 +238,8 @@ export class Idb {
                     obj.lastModified == null
                       ? null
                       : new Date(obj.lastModified),
-                  size: obj.size
+                  size: obj.size,
+                  hash: obj.hash
                 })
               : new IdbDirectoryEntry({
                   filesystem: filesystem,
@@ -248,7 +249,8 @@ export class Idb {
                     obj.lastModified == null
                       ? null
                       : new Date(obj.lastModified),
-                  size: obj.size
+                  size: obj.size,
+                  hash: obj.hash
                 })
           );
           cursor.continue();

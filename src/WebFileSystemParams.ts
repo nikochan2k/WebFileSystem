@@ -6,4 +6,5 @@ export interface WebFileSystemParams<FS extends FileSystem> {
   fullPath: string;
   lastModifiedDate: Date;
   size: number;
+  hash: string;
 }

@@ -4,6 +4,8 @@ import { S3DirectoryEntry } from "./S3DirectoryEntry";
 import { DIR_SEPARATOR } from "../WebFileSystemConstants";
 
 export class S3FileSystem implements FileSystem {
+  isLocal = false;
+
   name: string;
   root: DirectoryEntry;
   s3: S3;
@@ -15,7 +17,8 @@ export class S3FileSystem implements FileSystem {
       name: "",
       fullPath: DIR_SEPARATOR,
       lastModifiedDate: null,
-      size: null
+      size: null,
+      hash: null
     });
   }
 }

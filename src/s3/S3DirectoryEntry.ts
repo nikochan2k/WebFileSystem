@@ -48,7 +48,8 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
               name: name,
               fullPath: DIR_SEPARATOR + key,
               lastModifiedDate: data.LastModified,
-              size: data.ContentLength
+              size: data.ContentLength,
+              hash: data.ETag
             })
           );
         }
@@ -140,7 +141,8 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
         name: name,
         fullPath: path,
         lastModifiedDate: null,
-        size: null
+        size: null,
+        hash: null
       })
     );
   }
@@ -162,7 +164,8 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
   ): void {
     successCallback({
       modificationTime: this.lastModifiedDate,
-      size: null
+      size: null,
+      hash: null
     });
   }
 }
