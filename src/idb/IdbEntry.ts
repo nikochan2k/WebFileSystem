@@ -83,21 +83,23 @@ export abstract class IdbEntry implements Entry {
     const temp = { ...metadata };
     delete temp["modificationTime"];
     delete temp["size"];
+    const lastModified =
+      metadata.modificationTime === undefined
+        ? this.params.lastModified
+        : metadata.modificationTime === null
+        ? null
+        : metadata.modificationTime.getTime();
     const obj: WebFileSystemObject = {
       ...temp,
       name: this.name,
       fullPath: this.fullPath,
-      lastModified:
-        metadata.modificationTime === undefined
-          ? this.params.lastModified
-          : metadata.modificationTime === null
-          ? null
-          : metadata.modificationTime.getTime(),
+      lastModified: lastModified,
       size: this.params.size
     };
     this.filesystem.idb
       .put(obj)
       .then(() => {
+        this.params.lastModified = lastModified;
         successCallback();
       })
       .catch(err => {

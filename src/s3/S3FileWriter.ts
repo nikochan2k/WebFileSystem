@@ -7,13 +7,15 @@ import {
   CompleteMultipartUploadRequest
 } from "aws-sdk/clients/s3";
 
+const LIMIT = 1024 * 1024 * 5;
+
 export class S3FileWriter extends AbstractFileWriter<S3FileEntry>
   implements FileWriter {
   constructor(s3FileEntry: S3FileEntry, file: File) {
     super(s3FileEntry, file);
   }
 
-  doWrite(file: File, onsuccess: () => void) {
+  multipartUpload(file: File, onsuccess: () => void) {
     const filesystem = this.fileEntry.filesystem;
     const s3 = filesystem.s3;
     const bucket = filesystem.bucket;
@@ -32,7 +34,7 @@ export class S3FileWriter extends AbstractFileWriter<S3FileEntry>
 
         try {
           const uploadId = res.UploadId;
-          const partSize = 1024 * 1024 * 5;
+          const partSize = LIMIT;
           const allSize = file.size;
 
           if (this.onwritestart) {
@@ -111,5 +113,56 @@ export class S3FileWriter extends AbstractFileWriter<S3FileEntry>
         }
       }
     );
+  }
+
+  async upload(file: File, onsuccess: () => void) {
+    const filesystem = this.fileEntry.filesystem;
+    const s3 = filesystem.s3;
+    const bucket = filesystem.bucket;
+    const key = getKey(this.fileEntry.fullPath);
+
+    let body: any;
+    if (typeof process === "object") {
+      // Node
+      const sendData = await new Promise<Uint8Array>(resolve => {
+        const fileReader = new FileReader();
+        fileReader.onloadend = event => {
+          const data = event.target.result as ArrayBuffer;
+          const byte = new Uint8Array(data);
+          resolve(byte);
+        };
+        fileReader.readAsArrayBuffer(file);
+      });
+      body = new Buffer(sendData);
+    } else {
+      // Browser
+      body = file;
+    }
+    s3.putObject({ Bucket: bucket, Key: key, Body: body }, async err => {
+      if (err) {
+        this.handleError(err);
+        return;
+      }
+
+      const data = await s3.headObject({ Bucket: bucket, Key: key }).promise();
+      this.fileEntry.params.lastModified = data.LastModified.getTime();
+      onsuccess();
+      if (this.onwriteend) {
+        const evt: ProgressEvent<EventTarget> = {
+          loaded: this.position,
+          total: this.length,
+          lengthComputable: true
+        } as any;
+        this.onwriteend(evt);
+      }
+    });
+  }
+
+  doWrite(file: File, onsuccess: () => void) {
+    if (file.size <= LIMIT) {
+      this.upload(file, onsuccess);
+    } else {
+      this.multipartUpload(file, onsuccess);
+    }
   }
 }

@@ -9,7 +9,7 @@
   "scripts": {
     "build": "webpack",
     "watch": "webpack -w",
-    "test": "jest"
+    "test": "jest --runInBand"
   },
   "jest": {
     "moduleFileExtensions": [

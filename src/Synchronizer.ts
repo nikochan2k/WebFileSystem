@@ -152,10 +152,10 @@ export class Synchronizer {
     const localEntries = await localReader.readEntries();
     const remoteReader = remoteDir.createReader();
     const remoteEntries = await remoteReader.readEntries();
-    this.synchronizeEntries(localEntries, remoteEntries);
+    await this.synchronizeEntries(localEntries, remoteEntries);
   }
 
   async synchronizeAll() {
-    this.synchronizeDirectory(this.local.root, this.remote.root);
+    await this.synchronizeDirectory(this.local.root, this.remote.root);
   }
 }
