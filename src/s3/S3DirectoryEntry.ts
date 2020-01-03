@@ -129,15 +129,13 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
 
   async existsDirectory(path: string) {
     const filesystem = this.filesystem;
+    const prefix = getPrefix(path);
     const param: AWS.S3.ListObjectsV2Request = {
       Bucket: filesystem.bucket,
+      Prefix: prefix,
       Delimiter: DIR_SEPARATOR,
       MaxKeys: 1
     };
-    const prefix = getPrefix(path);
-    if (prefix) {
-      param.Prefix = prefix;
-    }
 
     const data = await filesystem.s3.listObjectsV2(param).promise();
     return 0 < data.CommonPrefixes.length || 0 < data.Contents.length;
@@ -186,7 +184,10 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
     this.doGetFile(
       key,
       () => {
-        throw new InvalidModificationError(path, `${path} is not a directory`);
+        onError(
+          new InvalidModificationError(path, `${path} is not a directory`),
+          errorCallback
+        );
       },
       err => {
         if (err instanceof NotFoundError) {
@@ -206,14 +207,33 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
     this.doGetFile(
       key,
       () => {
-        throw new InvalidModificationError(
-          this.fullPath,
-          `${this.fullPath} is not a directory`
+        onError(
+          new InvalidModificationError(
+            this.fullPath,
+            `${this.fullPath} is not a directory`
+          ),
+          errorCallback
         );
       },
-      async err => {
+      err => {
         if (err instanceof NotFoundError) {
-          successCallback();
+          this.existsDirectory(this.fullPath)
+            .then(result => {
+              if (result) {
+                onError(
+                  new InvalidModificationError(
+                    this.fullPath,
+                    `${this.fullPath} is not empty`
+                  ),
+                  errorCallback
+                );
+              } else {
+                successCallback();
+              }
+            })
+            .catch(err => {
+              onError(err, errorCallback);
+            });
         } else {
           onError(err, errorCallback);
         }
@@ -250,7 +270,7 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
           objects.push({ Key: content.Key });
         });
 
-        s3.deleteObjects(params, (err, deleteData) => {
+        s3.deleteObjects(params, err => {
           if (err) {
             onError(err, errorCallback);
             return;

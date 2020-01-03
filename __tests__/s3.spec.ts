@@ -1,7 +1,7 @@
 import { WebLocalFileSystemAsync } from "../src/WebLocalFileSystemAsync";
 import { FileSystemAsync } from "../src/filesystem";
 import { S3 } from "aws-sdk";
-import { NotFoundError } from "../src/FileError";
+import { NotFoundError, InvalidModificationError } from "../src/FileError";
 
 let fs: FileSystemAsync;
 beforeAll(async () => {
@@ -146,6 +146,18 @@ test("remove a file", async done => {
     names = names.filter(name => name !== entry.name);
   }
   expect(names.length).toBe(0);
+
+  done();
+});
+
+test("remove a not empty folder", async done => {
+  const entry = await fs.root.getDirectory("folder");
+  try {
+    await entry.remove();
+    fail();
+  } catch (e) {
+    expect(e).toBeInstanceOf(InvalidModificationError);
+  }
 
   done();
 });

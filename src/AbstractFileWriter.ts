@@ -28,9 +28,6 @@ export abstract class AbstractFileWriter<T extends FileEntry>
   }
 
   write(data: Blob): void {
-    // TODO: not handling onwritestart, onprogress, onwrite, onabort. Throw an error if
-    // they're defined.
-
     const current = this.file;
     if (current) {
       // Calc the head and tail fragments
