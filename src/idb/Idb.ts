@@ -1,9 +1,5 @@
-import { countSlash } from "./IdbUtil";
-import {
-  DIR_OPEN_BOUND,
-  DIR_SEPARATOR,
-  EMPTY_BLOB
-} from "../WebFileSystemConstants";
+import { countSlash, getRange } from "./IdbUtil";
+import { EMPTY_BLOB } from "../WebFileSystemConstants";
 import { IdbDirectoryEntry } from "./IdbDirectoryEntry";
 import { IdbEntry } from "./IdbEntry";
 import { IdbFileEntry } from "./IdbFileEntry";
@@ -119,12 +115,7 @@ export class Idb {
   getEntry(fullPath: string) {
     return new Promise<WebFileSystemObject>((resolve, reject) => {
       const tx = this.db.transaction([ENTRY_STORE], "readonly");
-      const range = IDBKeyRange.bound(
-        fullPath,
-        fullPath + DIR_OPEN_BOUND,
-        false,
-        true
-      );
+      const range = IDBKeyRange.only(fullPath);
       tx.onabort = function(ev) {
         reject(ev);
       };
@@ -144,12 +135,7 @@ export class Idb {
   getContent(fullPath: string) {
     return new Promise<string | Blob>((resolve, reject) => {
       const tx = this.db.transaction([CONTENT_STORE], "readonly");
-      const range = IDBKeyRange.bound(
-        fullPath,
-        fullPath + DIR_OPEN_BOUND,
-        false,
-        true
-      );
+      const range = IDBKeyRange.only(fullPath);
       tx.onabort = function(ev) {
         reject(ev);
       };
@@ -170,18 +156,36 @@ export class Idb {
     });
   }
 
+  hasChild(fullPath: string) {
+    return new Promise<boolean>((resolve, reject) => {
+      const tx = this.db.transaction([ENTRY_STORE], "readonly");
+      tx.onabort = function(ev) {
+        reject(ev);
+      };
+      tx.onerror = function(ev) {
+        reject(ev);
+      };
+      let result = false;
+      tx.oncomplete = function() {
+        resolve(result);
+      };
+
+      const range = getRange(fullPath);
+      const request = tx.objectStore(ENTRY_STORE).openCursor(range);
+      request.onerror = function(ev) {
+        reject(ev);
+      };
+      request.onsuccess = function(ev) {
+        const cursor = <IDBCursorWithValue>(<IDBRequest>ev.target).result;
+        if (cursor) {
+          result = true;
+        }
+      };
+    });
+  }
+
   getEntries(fullPath: string, recursive: boolean) {
     return new Promise<IdbEntry[]>((resolve, reject) => {
-      let range = null;
-      if (fullPath != DIR_SEPARATOR) {
-        range = IDBKeyRange.bound(
-          fullPath + DIR_SEPARATOR,
-          fullPath + DIR_OPEN_BOUND,
-          false,
-          true
-        );
-      }
-
       const tx = this.db.transaction([ENTRY_STORE], "readonly");
       tx.onabort = function(ev) {
         reject(ev);
@@ -195,11 +199,12 @@ export class Idb {
       };
 
       const filesystem = this.filesystem;
+      const slashCount = countSlash(fullPath);
+      const range = getRange(fullPath);
       const request = tx.objectStore(ENTRY_STORE).openCursor(range);
       request.onerror = function(ev) {
         reject(ev);
       };
-      const slashCount = countSlash(fullPath);
       request.onsuccess = function(ev) {
         const cursor = <IDBCursorWithValue>(<IDBRequest>ev.target).result;
         if (cursor) {
@@ -234,16 +239,38 @@ export class Idb {
       tx.oncomplete = function(ev) {
         resolve();
       };
-
-      const range = IDBKeyRange.bound(
-        fullPath,
-        fullPath + DIR_OPEN_BOUND,
-        false,
-        true
-      );
+      let range = IDBKeyRange.only(fullPath);
       const request = tx.objectStore(ENTRY_STORE).delete(range);
       request.onerror = function(ev) {
         reject(ev);
+      };
+    });
+  }
+
+  deleteRecursively(fullPath: string) {
+    return new Promise<void>((resolve, reject) => {
+      const tx = this.db.transaction([ENTRY_STORE], "readwrite");
+      tx.onabort = function(ev) {
+        reject(ev);
+      };
+      tx.onerror = function(ev) {
+        reject(ev);
+      };
+      tx.oncomplete = function() {
+        resolve();
+      };
+
+      const range = getRange(fullPath);
+      const request = tx.objectStore(ENTRY_STORE).openCursor(range);
+      request.onerror = function(ev) {
+        reject(ev);
+      };
+      request.onsuccess = function(ev) {
+        const cursor = <IDBCursorWithValue>(<IDBRequest>ev.target).result;
+        if (cursor) {
+          cursor.delete();
+          cursor.continue();
+        }
       };
     });
   }

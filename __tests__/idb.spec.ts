@@ -2,7 +2,7 @@ require("fake-indexeddb/auto");
 
 import { WebLocalFileSystemAsync } from "../src/WebLocalFileSystemAsync";
 import { FileSystemAsync } from "../src/filesystem";
-import { NotFoundError } from "../src/FileError";
+import { NotFoundError, InvalidModificationError } from "../src/FileError";
 
 let fs: FileSystemAsync;
 beforeAll(async () => {
@@ -107,6 +107,49 @@ test("readdir", async done => {
     names = names.filter(name => name !== entry.name);
   }
   expect(names.length).toBe(0);
+
+  done();
+});
+
+test("remove a file", async done => {
+  const entry = await fs.root.getFile("empty.txt");
+  await entry.remove();
+  try {
+    await fs.root.getFile("empty.txt");
+    fail();
+  } catch (e) {
+    expect(e).toBeInstanceOf(NotFoundError);
+  }
+
+  const reader = fs.root.createReader();
+  const entries = await reader.readEntries();
+  let names = ["test.txt", "folder"];
+  for (const entry of entries) {
+    names = names.filter(name => name !== entry.name);
+  }
+  expect(names.length).toBe(0);
+
+  done();
+});
+
+test("remove a not empty folder", async done => {
+  const entry = await fs.root.getDirectory("folder");
+  try {
+    await entry.remove();
+    fail();
+  } catch (e) {
+    expect(e).toBeInstanceOf(InvalidModificationError);
+  }
+
+  done();
+});
+
+test("remove recursively", async done => {
+  await fs.root.removeRecursively();
+
+  const reader = fs.root.createReader();
+  const entries = await reader.readEntries();
+  expect(entries.length).toBe(0);
 
   done();
 });

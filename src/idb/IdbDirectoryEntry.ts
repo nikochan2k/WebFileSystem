@@ -186,9 +186,27 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
   ): void {
     const idb = this.filesystem.idb;
     idb
-      .delete(this.fullPath)
-      .then(() => {
-        successCallback();
+      .hasChild(this.fullPath)
+      .then(result => {
+        if (result) {
+          onError(
+            new InvalidModificationError(
+              this.fullPath,
+              `${this.fullPath} is not empty`
+            ),
+            errorCallback
+          );
+          return;
+        }
+
+        idb
+          .delete(this.fullPath)
+          .then(() => {
+            successCallback();
+          })
+          .catch(err => {
+            onError(err, errorCallback);
+          });
       })
       .catch(err => {
         onError(err, errorCallback);
@@ -199,6 +217,13 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
     successCallback: VoidCallback,
     errorCallback?: ErrorCallback | undefined
   ): void {
-    this.remove(successCallback, errorCallback); // TODO
+    this.filesystem.idb
+      .deleteRecursively(this.fullPath)
+      .then(() => {
+        successCallback();
+      })
+      .catch(err => {
+        onError(err, errorCallback);
+      });
   }
 }

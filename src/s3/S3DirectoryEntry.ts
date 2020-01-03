@@ -127,7 +127,7 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
     );
   }
 
-  async existsDirectory(path: string) {
+  async hasChild(path: string) {
     const filesystem = this.filesystem;
     const prefix = getPrefix(path);
     const param: AWS.S3.ListObjectsV2Request = {
@@ -141,7 +141,7 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
     return 0 < data.CommonPrefixes.length || 0 < data.Contents.length;
   }
 
-  async doGetDirectory(
+  doGetDirectory(
     path: string,
     options: Flags,
     successCallback: DirectoryEntryCallback,
@@ -149,11 +149,7 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
   ) {
     const filesystem = this.filesystem;
     const name = path.split(DIR_SEPARATOR).pop();
-    if (
-      !S3DirectoryEntry.CheckDirectoryExistance ||
-      options.create ||
-      (await this.existsDirectory(path))
-    ) {
+    if (!S3DirectoryEntry.CheckDirectoryExistance || options.create) {
       successCallback(
         new S3DirectoryEntry({
           filesystem: filesystem,
@@ -165,7 +161,26 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
         })
       );
     } else {
-      errorCallback(new NotFoundError(path, "getDirectory"));
+      this.hasChild(path)
+        .then(result => {
+          if (result) {
+            successCallback(
+              new S3DirectoryEntry({
+                filesystem: filesystem,
+                name: name,
+                fullPath: path,
+                lastModified: null,
+                size: null,
+                hash: null
+              })
+            );
+            return;
+          }
+          errorCallback(new NotFoundError(path, "getDirectory"));
+        })
+        .catch(err => {
+          onError(err, errorCallback);
+        });
     }
   }
 
@@ -217,7 +232,7 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
       },
       err => {
         if (err instanceof NotFoundError) {
-          this.existsDirectory(this.fullPath)
+          this.hasChild(this.fullPath)
             .then(result => {
               if (result) {
                 onError(
