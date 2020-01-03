@@ -89,10 +89,12 @@ export class S3FileEntry extends S3Entry implements FileEntry {
       { Bucket: this.filesystem.bucket, Key: key },
       err => {
         if (err) {
-          onError(err, errorCallback);
-        } else {
-          successCallback();
+          if (err.statusCode !== 404) {
+            onError(err, errorCallback);
+            return;
+          }
         }
+        successCallback();
       }
     );
   }

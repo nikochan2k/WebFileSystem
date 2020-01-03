@@ -8,7 +8,7 @@ import {
   Flags,
   VoidCallback
 } from "../filesystem";
-import { getKey, getPath } from "./S3Util";
+import { getKey, getPath, getPrefix } from "./S3Util";
 import { InvalidModificationError, NotFoundError } from "../FileError";
 import { onError, resolveToFullPath } from "../WebFileSystemUtil";
 import { PutObjectRequest } from "aws-sdk/clients/s3";
@@ -17,6 +17,8 @@ import { S3Entry } from "./S3Entry";
 import { S3FileEntry } from "./S3FileEntry";
 
 export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
+  public static CheckDirectoryExistance = false;
+
   isFile = false;
   isDirectory = true;
 
@@ -97,7 +99,7 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
         if (entry.isDirectory) {
           const path = getPath(key);
           onError(
-            new InvalidModificationError(path, `${path} is directory`),
+            new InvalidModificationError(path, `${path} is not a file`),
             errorCallback
           );
           return;
@@ -121,6 +123,50 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
     );
   }
 
+  async existsDirectory(path: string) {
+    const filesystem = this.filesystem;
+    const param: AWS.S3.ListObjectsV2Request = {
+      Bucket: filesystem.bucket,
+      Delimiter: DIR_SEPARATOR,
+      MaxKeys: 1
+    };
+    const prefix = getPrefix(path);
+    if (prefix) {
+      param.Prefix = prefix;
+    }
+
+    const data = await filesystem.s3.listObjectsV2(param).promise();
+    return 0 < data.CommonPrefixes.length || 0 < data.Contents.length;
+  }
+
+  async doGetDirectory(
+    path: string,
+    options: Flags,
+    successCallback: DirectoryEntryCallback,
+    errorCallback?: ErrorCallback
+  ) {
+    const filesystem = this.filesystem;
+    const name = path.split(DIR_SEPARATOR).pop();
+    if (
+      !S3DirectoryEntry.CheckDirectoryExistance ||
+      options.create ||
+      (await this.existsDirectory(path))
+    ) {
+      successCallback(
+        new S3DirectoryEntry({
+          filesystem: filesystem,
+          name: name,
+          fullPath: path,
+          lastModified: null,
+          size: null,
+          hash: null
+        })
+      );
+    } else {
+      errorCallback(new NotFoundError(path, "getDirectory"));
+    }
+  }
+
   getDirectory(
     path: string,
     options?: Flags,
@@ -131,22 +177,44 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
       successCallback = () => {};
     }
 
-    // TODO incomplete
     path = resolveToFullPath(this.fullPath, path);
-    const name = path.split(DIR_SEPARATOR).pop();
-    successCallback(
-      new S3DirectoryEntry({
-        filesystem: this.filesystem,
-        name: name,
-        fullPath: path,
-        lastModified: null,
-        size: null,
-        hash: null
-      })
+    const key = getKey(path);
+    this.doGetFile(
+      key,
+      () => {
+        throw new InvalidModificationError(path, `${path} is not a directory`);
+      },
+      err => {
+        if (err instanceof NotFoundError) {
+          if (!options) {
+            options = {};
+          }
+          this.doGetDirectory(path, options, successCallback, errorCallback);
+        } else {
+          onError(err, errorCallback);
+        }
+      }
     );
   }
 
   remove(successCallback: VoidCallback, errorCallback?: ErrorCallback): void {
+    const key = getKey(this.fullPath);
+    this.doGetFile(
+      key,
+      () => {
+        throw new InvalidModificationError(
+          this.fullPath,
+          `${this.fullPath} is not a directory`
+        );
+      },
+      async err => {
+        if (err instanceof NotFoundError) {
+          successCallback();
+        } else {
+          onError(err, errorCallback);
+        }
+      }
+    );
     successCallback(); // NOOP
   }
 

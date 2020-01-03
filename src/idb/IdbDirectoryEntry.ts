@@ -89,7 +89,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
         if (obj) {
           if (obj.size == null) {
             onError(
-              new InvalidModificationError(path, `${path} is a directory`),
+              new InvalidModificationError(path, `${path} is not a file`),
               errorCallback
             );
             return;
@@ -143,7 +143,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
         if (obj) {
           if (obj.size != null) {
             onError(
-              new InvalidModificationError(path, `${path} is file`),
+              new InvalidModificationError(path, `${path} is not a directory`),
               errorCallback
             );
             return;
