@@ -106,3 +106,28 @@ test("add a text file", async done => {
 
   done();
 });
+
+test("add a text file", async done => {
+  let localDE = await local.root.getDirectory("folder", {
+    create: true,
+    exclusive: true
+  });
+  await localDE.getFile("in.txt", {
+    create: true,
+    exclusive: true
+  });
+
+  await synchronizer.synchronizeAll();
+
+  const localFE = await local.root.getFile("/folder/in.txt");
+  const localMeta = await localFE.getMetadata();
+  const remoteDE = await remote.root.getDirectory("folder");
+  const remoteFE = await remoteDE.getFile("in.txt");
+  const remoteMeta = await remoteFE.getMetadata();
+  expect(remoteMeta.size).toBe(localMeta.size);
+  expect(remoteMeta.modificationTime.getTime()).toBe(
+    localMeta.modificationTime.getTime()
+  );
+
+  done();
+});

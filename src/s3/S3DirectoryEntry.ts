@@ -6,13 +6,12 @@ import {
   ErrorCallback,
   FileEntryCallback,
   Flags,
-  MetadataCallback,
   VoidCallback
 } from "../filesystem";
-import { getKey } from "./S3Util";
-import { NOT_FOUND_ERR, INVALID_MODIFICATION_ERR } from "../FileError";
+import { getKey, getPath } from "./S3Util";
+import { InvalidModificationError, NotFoundError } from "../FileError";
+import { onError, resolveToFullPath } from "../WebFileSystemUtil";
 import { PutObjectRequest } from "aws-sdk/clients/s3";
-import { resolveToFullPath, onError } from "../WebFileSystemUtil";
 import { S3DirectoryReader } from "./S3DirectoryReader";
 import { S3Entry } from "./S3Entry";
 import { S3FileEntry } from "./S3FileEntry";
@@ -36,7 +35,7 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
       (err, data) => {
         if (err) {
           if (err.statusCode === 404) {
-            onError(NOT_FOUND_ERR, errorCallback);
+            onError(new NotFoundError(getPath(key), "getFile"), errorCallback);
           } else {
             onError(err, errorCallback);
           }
@@ -96,17 +95,24 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
       key,
       entry => {
         if (entry.isDirectory) {
-          onError(INVALID_MODIFICATION_ERR, errorCallback);
+          const path = getPath(key);
+          onError(
+            new InvalidModificationError(path, `${path} is directory`),
+            errorCallback
+          );
           return;
         }
         if (options.create && options.exclusive) {
-          onError(INVALID_MODIFICATION_ERR, errorCallback);
+          onError(
+            new InvalidModificationError(path, `${path} already exists`),
+            errorCallback
+          );
           return;
         }
         successCallback(entry);
       },
       err => {
-        if (err === NOT_FOUND_ERR && options.create) {
+        if (err instanceof NotFoundError && options.create) {
           this.doCrateFile(key, successCallback, errorCallback);
         } else {
           onError(err, errorCallback);

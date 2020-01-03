@@ -2,7 +2,7 @@ require("fake-indexeddb/auto");
 
 import { WebLocalFileSystemAsync } from "../src/WebLocalFileSystemAsync";
 import { FileSystemAsync } from "../src/filesystem";
-import { NOT_FOUND_ERR } from "../src/FileError";
+import { NotFoundError } from "../src/FileError";
 
 let fs: FileSystemAsync;
 beforeAll(async () => {
@@ -93,7 +93,7 @@ test("create file in the dir", async done => {
     await dirEntry.getFile("out.txt");
     fail();
   } catch (e) {
-    expect(e).toBe(NOT_FOUND_ERR);
+    expect(e).toBeInstanceOf(NotFoundError);
   }
 
   done();
