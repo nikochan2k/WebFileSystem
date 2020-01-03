@@ -3,7 +3,8 @@ import {
   ErrorCallback,
   FileCallback,
   FileEntry,
-  FileWriterCallback
+  FileWriterCallback,
+  VoidCallback
 } from "../filesystem";
 import { Idb } from "./Idb";
 import { IdbEntry } from "./IdbEntry";
@@ -69,6 +70,21 @@ export class IdbFileEntry extends IdbEntry implements FileEntry {
       })
       .catch(error => {
         onError(error, errorCallback);
+      });
+  }
+
+  remove(
+    successCallback: VoidCallback,
+    errorCallback?: ErrorCallback | undefined
+  ): void {
+    const idb = this.filesystem.idb;
+    idb
+      .delete(this.fullPath)
+      .then(() => {
+        successCallback();
+      })
+      .catch(err => {
+        onError(err, errorCallback);
       });
   }
 }

@@ -1,3 +1,4 @@
+import { countSlash } from "./IdbUtil";
 import {
   DIR_OPEN_BOUND,
   DIR_SEPARATOR,
@@ -169,10 +170,8 @@ export class Idb {
     });
   }
 
-  getAllEntries(fullPath: string) {
+  getEntries(fullPath: string, recursive: boolean) {
     return new Promise<IdbEntry[]>((resolve, reject) => {
-      let entries: IdbEntry[] = [];
-
       let range = null;
       if (fullPath != DIR_SEPARATOR) {
         range = IDBKeyRange.bound(
@@ -190,31 +189,8 @@ export class Idb {
       tx.onerror = function(ev) {
         reject(ev);
       };
+      let entries: IdbEntry[] = [];
       tx.oncomplete = function() {
-        // TODO: figure out how to do be range queries instead of filtering result
-        // in memory :(
-        entries = entries.filter(function(entry) {
-          const entryPartsLen = entry.fullPath.split(DIR_SEPARATOR).length;
-          const fullPathPartsLen = fullPath.split(DIR_SEPARATOR).length;
-
-          if (
-            fullPath == DIR_SEPARATOR &&
-            entryPartsLen < fullPathPartsLen + 1
-          ) {
-            // Hack to filter out entries in the root folder. This is inefficient
-            // because reading the entires of fs.root (e.g. '/') returns ALL
-            // results in the database, then filters out the entries not in '/'.
-            return entry;
-          } else if (
-            fullPath != DIR_SEPARATOR &&
-            entryPartsLen == fullPathPartsLen + 1
-          ) {
-            // If this a subfolder and entry is a direct child, include it in
-            // the results. Otherwise, it's not an entry of this folder.
-            return entry;
-          }
-        });
-
         resolve(entries);
       };
 
@@ -223,22 +199,26 @@ export class Idb {
       request.onerror = function(ev) {
         reject(ev);
       };
+      const slashCount = countSlash(fullPath);
       request.onsuccess = function(ev) {
         const cursor = <IDBCursorWithValue>(<IDBRequest>ev.target).result;
         if (cursor) {
           const obj = cursor.value as WebFileSystemObject;
 
-          entries.push(
-            obj.size != null
-              ? new IdbFileEntry({
-                  filesystem: filesystem,
-                  ...obj
-                })
-              : new IdbDirectoryEntry({
-                  filesystem: filesystem,
-                  ...obj
-                })
-          );
+          if (recursive || slashCount === countSlash(obj.fullPath)) {
+            entries.push(
+              obj.size != null
+                ? new IdbFileEntry({
+                    filesystem: filesystem,
+                    ...obj
+                  })
+                : new IdbDirectoryEntry({
+                    filesystem: filesystem,
+                    ...obj
+                  })
+            );
+          }
+
           cursor.continue();
         }
       };

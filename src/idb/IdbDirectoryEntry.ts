@@ -6,7 +6,7 @@ import {
   ErrorCallback,
   FileEntryCallback,
   Flags,
-  MetadataCallback
+  VoidCallback
 } from "../filesystem";
 import { IdbDirectoryReader } from "./IdbDirectoryReader";
 import { IdbEntry } from "./IdbEntry";
@@ -178,5 +178,27 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
       .catch(err => {
         onError(err, errorCallback);
       });
+  }
+
+  remove(
+    successCallback: VoidCallback,
+    errorCallback?: ErrorCallback | undefined
+  ): void {
+    const idb = this.filesystem.idb;
+    idb
+      .delete(this.fullPath)
+      .then(() => {
+        successCallback();
+      })
+      .catch(err => {
+        onError(err, errorCallback);
+      });
+  }
+
+  removeRecursively(
+    successCallback: VoidCallback,
+    errorCallback?: ErrorCallback | undefined
+  ): void {
+    this.remove(successCallback, errorCallback); // TODO
   }
 }
