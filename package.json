@@ -7,27 +7,27 @@
   "author": "Yoshihiro Seki",
   "license": "MIT",
   "scripts": {
-    "build": "webpack",
-    "watch": "webpack -w",
+    "build": "tsc",
     "test": "jest --runInBand"
   },
   "jest": {
     "moduleFileExtensions": [
+      "js",
       "ts",
-      "tsx",
-      "js"
+      "tsx"
     ],
     "transform": {
       "^.+\\.(ts|tsx)$": "ts-jest"
     },
     "globals": {
       "ts-jest": {
-        "tsConfigFile": "tsconfig.json"
+        "tsConfig": "tsconfig.json"
       }
     },
     "testMatch": [
       "**/__tests__/*.spec.+(ts|tsx|js)"
-    ]
+    ],
+    "preset": "ts-jest"
   },
   "devDependencies": {
     "@types/jest": "^24.0.25",
