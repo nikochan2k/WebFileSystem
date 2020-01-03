@@ -107,7 +107,7 @@ test("add a text file", async done => {
   done();
 });
 
-test("add a text file", async done => {
+test("create folder, and add a text file", async done => {
   let localDE = await local.root.getDirectory("folder", {
     create: true,
     exclusive: true

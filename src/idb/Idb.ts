@@ -1,5 +1,5 @@
 import { countSlash, getRange } from "./IdbUtil";
-import { EMPTY_BLOB } from "../WebFileSystemConstants";
+import { DIR_SEPARATOR, EMPTY_BLOB } from "../WebFileSystemConstants";
 import { IdbDirectoryEntry } from "./IdbDirectoryEntry";
 import { IdbEntry } from "./IdbEntry";
 import { IdbFileEntry } from "./IdbFileEntry";
@@ -199,7 +199,12 @@ export class Idb {
       };
 
       const filesystem = this.filesystem;
-      const slashCount = countSlash(fullPath);
+      let slashCount: number;
+      if (fullPath === DIR_SEPARATOR) {
+        slashCount = 1;
+      } else {
+        slashCount = countSlash(fullPath) + 1; // + 1 is the last slash for directory
+      }
       const range = getRange(fullPath);
       const request = tx.objectStore(ENTRY_STORE).openCursor(range);
       request.onerror = function(ev) {
