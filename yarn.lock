@@ -2279,11 +2279,6 @@ iconv-lite@0.4.24, iconv-lite@^0.4.4:
   dependencies:
     safer-buffer ">= 2.1.2 < 3"
 
-idb.filesystem.js@^0.0.8:
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/idb.filesystem.js/-/idb.filesystem.js-0.0.8.tgz#67f7573b17f963d2923047880c7c5cb7e1fc5487"
-  integrity sha512-R5RoasiTV0CUkfL4A0bYGmfUKJt1NHlo7/5zKZILkLaNtNNyhvm8IV3VUPe6JT8TfV4mOZ1huYiEwfXtq9sn+Q==
-
 ieee754@1.1.13, ieee754@^1.1.4:
   version "1.1.13"
   resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.1.13.tgz#ec168558e95aa181fd87d37f55c32bbcb6708b84"
