@@ -1,3 +1,8 @@
+import {
+  DeleteObjectsRequest,
+  ObjectIdentifierList,
+  PutObjectRequest
+} from "aws-sdk/clients/s3";
 import { DIR_SEPARATOR } from "../WebFileSystemConstants";
 import {
   DirectoryEntry,
@@ -11,7 +16,6 @@ import {
 import { getKey, getPath, getPrefix } from "./S3Util";
 import { InvalidModificationError, NotFoundError } from "../FileError";
 import { onError, resolveToFullPath } from "../WebFileSystemUtil";
-import { PutObjectRequest } from "aws-sdk/clients/s3";
 import { S3DirectoryReader } from "./S3DirectoryReader";
 import { S3Entry } from "./S3Entry";
 import { S3FileEntry } from "./S3FileEntry";
@@ -215,13 +219,49 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
         }
       }
     );
-    successCallback(); // NOOP
   }
 
   removeRecursively(
     successCallback: VoidCallback,
     errorCallback?: ErrorCallback
   ): void {
-    this.remove(successCallback); // TODO
+    const prefix = getPrefix(this.fullPath);
+    const filesystem = this.filesystem;
+    const s3 = filesystem.s3;
+    s3.listObjectsV2(
+      { Bucket: filesystem.bucket, Prefix: prefix },
+      (err, listData) => {
+        if (err) {
+          onError(err, errorCallback);
+          return;
+        }
+
+        if (listData.Contents.length === 0) {
+          successCallback();
+        }
+
+        const objects: ObjectIdentifierList = [];
+        const params: DeleteObjectsRequest = {
+          Bucket: filesystem.bucket,
+          Delete: { Objects: objects }
+        };
+
+        listData.Contents.forEach(function(content) {
+          objects.push({ Key: content.Key });
+        });
+
+        s3.deleteObjects(params, (err, deleteData) => {
+          if (err) {
+            onError(err, errorCallback);
+            return;
+          }
+          if (listData.Contents.length === 1000) {
+            this.removeRecursively(successCallback, errorCallback);
+            return;
+          }
+          successCallback();
+        });
+      }
+    );
   }
 }
