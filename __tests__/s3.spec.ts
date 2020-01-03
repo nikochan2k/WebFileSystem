@@ -128,3 +128,34 @@ test("readdir", async done => {
 
   done();
 });
+
+test("remove a file", async done => {
+  const entry = await fs.root.getFile("empty.txt");
+  await entry.remove();
+  try {
+    await fs.root.getFile("empty.txt");
+    fail();
+  } catch (e) {
+    expect(e).toBeInstanceOf(NotFoundError);
+  }
+
+  const reader = fs.root.createReader();
+  const entries = await reader.readEntries();
+  let names = ["test.txt", "folder"];
+  for (const entry of entries) {
+    names = names.filter(name => name !== entry.name);
+  }
+  expect(names.length).toBe(0);
+
+  done();
+});
+
+test("remove recursively", async done => {
+  await fs.root.removeRecursively();
+
+  const reader = fs.root.createReader();
+  const entries = await reader.readEntries();
+  expect(entries.length).toBe(0);
+
+  done();
+});
