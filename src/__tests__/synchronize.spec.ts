@@ -1,9 +1,9 @@
 require("fake-indexeddb/auto");
 
-import { FileSystemAsync } from "../src/filesystem";
+import { FileSystemAsync } from "../filesystem";
 import { S3 } from "aws-sdk";
-import { Synchronizer } from "../src/Synchronizer";
-import { WebLocalFileSystemAsync } from "../src/WebLocalFileSystemAsync";
+import { Synchronizer } from "../Synchronizer";
+import { WebLocalFileSystemAsync } from "../WebLocalFileSystemAsync";
 
 let local: FileSystemAsync;
 let remote: FileSystemAsync;

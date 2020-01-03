@@ -117,7 +117,7 @@ export interface FileSystem {
   root: DirectoryEntry;
 }
 
-interface Entry {
+export interface Entry {
   /**
    * Entry is a file.
    */
@@ -447,7 +447,7 @@ export interface FileSystemAsync {
 /**
  * An abstract interface representing entries in a file system, each of which may be a FileEntrySync or DirectoryEntrySync.
  */
-interface EntryAsync {
+export interface EntryAsync {
   /**
    * EntrySync is a file.
    * @readonly

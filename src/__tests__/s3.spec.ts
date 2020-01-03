@@ -1,12 +1,29 @@
-require("fake-indexeddb/auto");
-
-import { WebLocalFileSystemAsync } from "../src/WebLocalFileSystemAsync";
-import { FileSystemAsync } from "../src/filesystem";
-import { NotFoundError, InvalidModificationError } from "../src/FileError";
+import { WebLocalFileSystemAsync } from "../WebLocalFileSystemAsync";
+import { FileSystemAsync } from "../filesystem";
+import { S3 } from "aws-sdk";
+import { NotFoundError, InvalidModificationError } from "../FileError";
 
 let fs: FileSystemAsync;
 beforeAll(async () => {
-  const factory = new WebLocalFileSystemAsync("web-file-system-test");
+  const options: S3.ClientConfiguration = {
+    accessKeyId: "KFS0LZVKZ8G456A502L3",
+    secretAccessKey: "uVwBONMdTwJI1+C8jUhrypvshHz3OY8Ooar3amdC",
+    endpoint: "http://127.0.0.1:9000",
+    s3ForcePathStyle: true, // needed with minio?
+    signatureVersion: "v4"
+  };
+
+  const s3 = new S3(options);
+  const bucket = "web-file-system-test";
+  try {
+    await s3.createBucket({ Bucket: bucket }).promise();
+  } catch (e) {}
+  const list = await s3.listObjectsV2({ Bucket: bucket }).promise();
+  for (const content of list.Contents) {
+    await s3.deleteObject({ Bucket: bucket, Key: content.Key }).promise();
+  }
+
+  const factory = new WebLocalFileSystemAsync(bucket, "s3", options);
   fs = await factory.requestFileSystemAsync(
     window.PERSISTENT,
     Number.MAX_VALUE
@@ -22,6 +39,7 @@ test("add empty file", async done => {
   expect(fileEntry.fullPath).toBe("/empty.txt");
   expect(fileEntry.isDirectory).toBe(false);
   expect(fileEntry.isFile).toBe(true);
+
   done();
 });
 
