@@ -10,11 +10,11 @@ import { WebDirectoryReaderAsync } from "./WebDirectoryReaderAsync";
 import { WebEntryAsync } from "./WebEntryAsync";
 import { WebFileEntryAsync } from "./WebFileEntryAsync";
 
-export class WebDirectoryEntryAsync extends WebEntryAsync
+export class WebDirectoryEntryAsync extends WebEntryAsync<DirectoryEntry>
   implements DirectoryEntryAsync {
   constructor(
     fileSystemAsync: FileSystemAsync,
-    public directoryEntry: DirectoryEntry
+    directoryEntry: DirectoryEntry
   ) {
     super(fileSystemAsync, directoryEntry);
   }
@@ -22,13 +22,13 @@ export class WebDirectoryEntryAsync extends WebEntryAsync
   createReader(): DirectoryReaderAsync {
     return new WebDirectoryReaderAsync(
       this.fileSystemAsync,
-      this.directoryEntry.createReader()
+      this.entry.createReader()
     );
   }
 
   getFile(path: string, options?: Flags): Promise<FileEntryAsync> {
     return new Promise<FileEntryAsync>((resolve, reject) => {
-      this.directoryEntry.getFile(
+      this.entry.getFile(
         path,
         options,
         entry => {
@@ -43,7 +43,7 @@ export class WebDirectoryEntryAsync extends WebEntryAsync
 
   getDirectory(path: string, options?: Flags): Promise<DirectoryEntryAsync> {
     return new Promise<DirectoryEntryAsync>((resolve, reject) => {
-      this.directoryEntry.getDirectory(
+      this.entry.getDirectory(
         path,
         options,
         entry => {
@@ -58,7 +58,7 @@ export class WebDirectoryEntryAsync extends WebEntryAsync
 
   removeRecursively(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      this.directoryEntry.removeRecursively(
+      this.entry.removeRecursively(
         () => {
           resolve();
         },

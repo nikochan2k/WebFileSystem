@@ -67,9 +67,8 @@ test("add a empty file", async done => {
   done();
 });
 
-/*
 test("add a text file", async done => {
-  const localFE = await local.root.getFile("test.txt", {
+  let localFE = await local.root.getFile("test.txt", {
     create: true,
     exclusive: true
   });
@@ -78,7 +77,32 @@ test("add a text file", async done => {
 
   await synchronizer.synchronizeAll();
 
+  const remoteReader = remote.root.createReader();
+  const remoteEntries = await remoteReader.readEntries();
+  expect(remoteEntries.length).toBe(2);
+
+  let entries = remoteEntries.filter(re => {
+    return re.name === "empty.txt";
+  });
+  expect(entries.length).toBe(1);
+  const emptyTxt = entries[0];
+  expect(emptyTxt.isFile).toBe(true);
+  const emptyTxtMeta = await emptyTxt.getMetadata();
+  expect(emptyTxtMeta.size).toBe(0);
+
+  entries = remoteEntries.filter(re => {
+    return re.name === "test.txt";
+  });
+  expect(entries.length).toBe(1);
+  const testTxt = entries[0];
+  expect(testTxt.isFile).toBe(true);
+  localFE = await local.root.getFile("test.txt");
+  const localFEMeta = await localFE.getMetadata();
+  const testTxtMeta = await testTxt.getMetadata();
+  expect(testTxtMeta.size).toBe(localFEMeta.size);
+  expect(testTxtMeta.modificationTime.getTime()).toBe(
+    localFEMeta.modificationTime.getTime()
+  );
 
   done();
 });
-*/

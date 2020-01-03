@@ -8,10 +8,10 @@ import {
 } from "./filesystem";
 import { WebDirectoryEntryAsync } from "./WebDirectoryEntryAsync";
 
-export abstract class WebEntryAsync implements EntryAsync {
+export abstract class WebEntryAsync<T extends Entry> implements EntryAsync {
   constructor(
     protected fileSystemAsync: FileSystemAsync,
-    protected entry: Entry
+    protected entry: T
   ) {}
 
   get isFile() {
