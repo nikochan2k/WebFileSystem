@@ -1,8 +1,8 @@
-import { DIR_SEPARATOR } from "../WebFileSystemConstants";
+import { DIR_SEPARATOR } from "../FileSystemConstants";
 import { DirectoryReader, EntriesCallback, ErrorCallback } from "../filesystem";
 import { getPrefix } from "./S3Util";
 import { ListObjectsV2Request } from "aws-sdk/clients/s3";
-import { onError } from "../WebFileSystemUtil";
+import { onError } from "../FileSystemUtil";
 import { S3DirectoryEntry } from "./S3DirectoryEntry";
 import { S3Entry } from "./S3Entry";
 import { S3FileEntry } from "./S3FileEntry";

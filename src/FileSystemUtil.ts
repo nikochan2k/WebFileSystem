@@ -1,18 +1,13 @@
-import { DIR_SEPARATOR } from "./WebFileSystemConstants";
-import {
-  DirectoryEntry,
-  Entry,
-  ErrorCallback,
-  FileEntry,
-  FileSystemAsync
-} from "./filesystem";
-import { WebDirectoryEntryAsync } from "./WebDirectoryEntryAsync";
-import { WebFileEntryAsync } from "./WebFileEntryAsync";
+import { DIR_SEPARATOR } from "./FileSystemConstants";
+import { DirectoryEntry, Entry, ErrorCallback, FileEntry } from "./filesystem";
+import { DirectoryEntryAsync } from "./DirectoryEntryAsync";
+import { FileEntryAsync } from "./FileEntryAsync";
+import { FileSystemAsync } from "./FileSystemAsync";
 
 export function createEntry(fileSystemAsync: FileSystemAsync, entry: Entry) {
   return entry.isFile
-    ? new WebFileEntryAsync(fileSystemAsync, entry as FileEntry)
-    : new WebDirectoryEntryAsync(fileSystemAsync, entry as DirectoryEntry);
+    ? new FileEntryAsync(fileSystemAsync, entry as FileEntry)
+    : new DirectoryEntryAsync(fileSystemAsync, entry as DirectoryEntry);
 }
 
 export function resolveToFullPath(cwdFullPath: string, path: string) {

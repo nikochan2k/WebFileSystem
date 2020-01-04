@@ -1,4 +1,4 @@
-import { DIR_SEPARATOR } from "../WebFileSystemConstants";
+import { DIR_SEPARATOR } from "../FileSystemConstants";
 import {
   DirectoryEntry,
   DirectoryEntryCallback,
@@ -9,10 +9,10 @@ import {
   MetadataCallback,
   VoidCallback
 } from "../filesystem";
+import { FileSystemObject } from "../FileSystemObject";
+import { FileSystemParams } from "../FileSystemParams";
 import { IdbFileSystem } from "./IdbFileSystem";
 import { NotImplementedError } from "../FileError";
-import { WebFileSystemObject } from "../WebFileSystemObject";
-import { WebFileSystemParams } from "../WebFileSystemParams";
 
 export abstract class IdbEntry implements Entry {
   abstract isFile: boolean;
@@ -30,7 +30,7 @@ export abstract class IdbEntry implements Entry {
     return this.params.fullPath;
   }
 
-  constructor(public params: WebFileSystemParams<IdbFileSystem>) {}
+  constructor(public params: FileSystemParams<IdbFileSystem>) {}
 
   abstract remove(
     successCallback: VoidCallback,
@@ -71,7 +71,7 @@ export abstract class IdbEntry implements Entry {
         : metadata.modificationTime === null
         ? null
         : metadata.modificationTime.getTime();
-    const obj: WebFileSystemObject = {
+    const obj: FileSystemObject = {
       ...temp,
       name: this.name,
       fullPath: this.fullPath,

@@ -1,4 +1,4 @@
-import { DIR_SEPARATOR } from "../WebFileSystemConstants";
+import { DIR_SEPARATOR } from "../FileSystemConstants";
 
 export function getPath(key: string) {
   let path = "";

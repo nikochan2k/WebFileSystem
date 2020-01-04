@@ -1,13 +1,9 @@
-import {
-  EntryAsync,
-  FileSystemAsync,
-  LocalFileSystemAsync,
-  LocalFileSystem
-} from "./filesystem";
+import { DirectoryEntry, FileEntry, LocalFileSystem } from "./filesystem";
+import { EntryAsync } from "./EntryAsync";
+import { FileSystemAsync } from "./FileSystemAsync";
 import { NotImplementedError } from "./FileError";
-import { WebFileSystemAsync } from "./WebFileSystemAsync";
 
-export class WebLocalFileSystemAsync implements LocalFileSystemAsync {
+export class LocalFileSystemAsync {
   constructor(public localFileSystem: LocalFileSystem) {}
 
   get TEMPORARY() {
@@ -24,7 +20,7 @@ export class WebLocalFileSystemAsync implements LocalFileSystemAsync {
         type,
         size,
         filesystem => {
-          resolve(new WebFileSystemAsync(filesystem));
+          resolve(new FileSystemAsync(filesystem));
         },
         err => {
           reject(err);
@@ -33,7 +29,9 @@ export class WebLocalFileSystemAsync implements LocalFileSystemAsync {
     });
   }
 
-  resolveLocalFileSystemAsyncURL(url: string): Promise<EntryAsync> {
+  resolveLocalFileSystemAsyncURL(
+    url: string
+  ): Promise<EntryAsync<FileEntry | DirectoryEntry>> {
     throw new NotImplementedError("", url);
   }
 }

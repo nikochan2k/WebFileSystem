@@ -1,17 +1,10 @@
-import {
-  DirectoryEntry,
-  DirectoryEntryAsync,
-  DirectoryReaderAsync,
-  FileEntryAsync,
-  FileSystemAsync,
-  Flags
-} from "./filesystem";
-import { WebDirectoryReaderAsync } from "./WebDirectoryReaderAsync";
-import { WebEntryAsync } from "./WebEntryAsync";
-import { WebFileEntryAsync } from "./WebFileEntryAsync";
+import { DirectoryEntry, Flags } from "./filesystem";
+import { DirectoryReaderAsync } from "./DirectoryReaderAsync";
+import { EntryAsync } from "./EntryAsync";
+import { FileEntryAsync } from "./FileEntryAsync";
+import { FileSystemAsync } from "./FileSystemAsync";
 
-export class WebDirectoryEntryAsync extends WebEntryAsync<DirectoryEntry>
-  implements DirectoryEntryAsync {
+export class DirectoryEntryAsync extends EntryAsync<DirectoryEntry> {
   constructor(
     fileSystemAsync: FileSystemAsync,
     directoryEntry: DirectoryEntry
@@ -20,7 +13,7 @@ export class WebDirectoryEntryAsync extends WebEntryAsync<DirectoryEntry>
   }
 
   createReader(): DirectoryReaderAsync {
-    return new WebDirectoryReaderAsync(
+    return new DirectoryReaderAsync(
       this.fileSystemAsync,
       this.entry.createReader()
     );
@@ -32,7 +25,7 @@ export class WebDirectoryEntryAsync extends WebEntryAsync<DirectoryEntry>
         path,
         options,
         entry => {
-          resolve(new WebFileEntryAsync(this.fileSystemAsync, entry));
+          resolve(new FileEntryAsync(this.fileSystemAsync, entry));
         },
         error => {
           reject(error);
@@ -47,7 +40,7 @@ export class WebDirectoryEntryAsync extends WebEntryAsync<DirectoryEntry>
         path,
         options,
         entry => {
-          resolve(new WebDirectoryEntryAsync(this.fileSystemAsync, entry));
+          resolve(new DirectoryEntryAsync(this.fileSystemAsync, entry));
         },
         error => {
           reject(error);

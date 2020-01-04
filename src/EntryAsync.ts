@@ -1,14 +1,9 @@
-import { createEntry } from "./WebFileSystemUtil";
-import {
-  DirectoryEntryAsync,
-  Entry,
-  EntryAsync,
-  FileSystemAsync,
-  Metadata
-} from "./filesystem";
-import { WebDirectoryEntryAsync } from "./WebDirectoryEntryAsync";
+import { createEntry } from "./FileSystemUtil";
+import { DirectoryEntry, Entry, FileEntry, Metadata } from "./filesystem";
+import { DirectoryEntryAsync } from "./DirectoryEntryAsync";
+import { FileSystemAsync } from "./FileSystemAsync";
 
-export abstract class WebEntryAsync<T extends Entry> implements EntryAsync {
+export abstract class EntryAsync<T extends Entry> {
   constructor(protected fileSystemAsync: FileSystemAsync, protected entry: T) {}
 
   get isFile() {
@@ -54,34 +49,44 @@ export abstract class WebEntryAsync<T extends Entry> implements EntryAsync {
     });
   }
 
-  moveTo(parent: DirectoryEntryAsync, newName?: string): Promise<EntryAsync> {
-    return new Promise<EntryAsync>((resolve, reject) => {
-      this.entry.moveTo(
-        parent,
-        newName,
-        entry => {
-          resolve(createEntry(this.fileSystemAsync, entry));
-        },
-        error => {
-          reject(error);
-        }
-      );
-    });
+  moveTo(
+    parent: DirectoryEntryAsync,
+    newName?: string
+  ): Promise<EntryAsync<FileEntry | DirectoryEntry>> {
+    return new Promise<EntryAsync<FileEntry | DirectoryEntry>>(
+      (resolve, reject) => {
+        this.entry.moveTo(
+          parent,
+          newName,
+          entry => {
+            resolve(createEntry(this.fileSystemAsync, entry));
+          },
+          error => {
+            reject(error);
+          }
+        );
+      }
+    );
   }
 
-  copyTo(parent: DirectoryEntryAsync, newName?: string): Promise<EntryAsync> {
-    return new Promise<EntryAsync>((resolve, reject) => {
-      this.entry.copyTo(
-        parent,
-        newName,
-        entry => {
-          resolve(createEntry(this.fileSystemAsync, entry));
-        },
-        error => {
-          reject(error);
-        }
-      );
-    });
+  copyTo(
+    parent: DirectoryEntryAsync,
+    newName?: string
+  ): Promise<EntryAsync<FileEntry | DirectoryEntry>> {
+    return new Promise<EntryAsync<FileEntry | DirectoryEntry>>(
+      (resolve, reject) => {
+        this.entry.copyTo(
+          parent,
+          newName,
+          entry => {
+            resolve(createEntry(this.fileSystemAsync, entry));
+          },
+          error => {
+            reject(error);
+          }
+        );
+      }
+    );
   }
 
   toURL(): string {
@@ -105,7 +110,7 @@ export abstract class WebEntryAsync<T extends Entry> implements EntryAsync {
     return new Promise<DirectoryEntryAsync>((resolve, reject) => {
       this.entry.getParent(
         entry => {
-          resolve(new WebDirectoryEntryAsync(this.fileSystemAsync, entry));
+          resolve(new DirectoryEntryAsync(this.fileSystemAsync, entry));
         },
         error => {
           reject(error);

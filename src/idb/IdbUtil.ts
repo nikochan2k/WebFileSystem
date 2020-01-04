@@ -1,4 +1,4 @@
-import { DIR_OPEN_BOUND, DIR_SEPARATOR } from "../WebFileSystemConstants";
+import { DIR_OPEN_BOUND, DIR_SEPARATOR } from "../FileSystemConstants";
 
 export function countSlash(path: string) {
   let result = 0;

@@ -8,9 +8,9 @@ import {
   MetadataCallback,
   VoidCallback
 } from "../filesystem";
+import { FileSystemParams } from "../FileSystemParams";
 import { NotImplementedError } from "../FileError";
 import { S3FileSystem } from "./S3FileSystem";
-import { WebFileSystemParams } from "../WebFileSystemParams";
 
 export abstract class S3Entry implements Entry {
   abstract isFile: boolean;
@@ -25,7 +25,7 @@ export abstract class S3Entry implements Entry {
     return this.params.filesystem;
   }
 
-  constructor(public params: WebFileSystemParams<S3FileSystem>) {}
+  constructor(public params: FileSystemParams<S3FileSystem>) {}
 
   getMetadata(
     successCallback: MetadataCallback,

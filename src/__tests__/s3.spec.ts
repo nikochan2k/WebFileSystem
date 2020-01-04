@@ -1,8 +1,8 @@
-import { FileSystemAsync } from "../filesystem";
+import { FileSystemAsync } from "../FileSystemAsync";
 import { InvalidModificationError, NotFoundError } from "../FileError";
+import { LocalFileSystemAsync } from "../LocalFileSystemAsync";
 import { S3 } from "aws-sdk";
 import { S3LocalFileSystem } from "../s3/S3LocalFileSystem";
-import { WebLocalFileSystemAsync } from "../WebLocalFileSystemAsync";
 
 let fs: FileSystemAsync;
 beforeAll(async () => {
@@ -28,10 +28,8 @@ beforeAll(async () => {
     "web-file-system-test",
     options
   );
-  const webLocalFileSystemAsync = new WebLocalFileSystemAsync(
-    s3LocalFileSystem
-  );
-  fs = await webLocalFileSystemAsync.requestFileSystemAsync(
+  const factory = new LocalFileSystemAsync(s3LocalFileSystem);
+  fs = await factory.requestFileSystemAsync(
     window.PERSISTENT,
     Number.MAX_VALUE
   );

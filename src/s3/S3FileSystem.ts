@@ -1,4 +1,4 @@
-import { DIR_SEPARATOR } from "../WebFileSystemConstants";
+import { DIR_SEPARATOR } from "../FileSystemConstants";
 import { DirectoryEntry, FileSystem } from "../filesystem";
 import { S3 } from "aws-sdk";
 import { S3DirectoryEntry } from "./S3DirectoryEntry";

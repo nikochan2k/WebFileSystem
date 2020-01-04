@@ -3,7 +3,7 @@ import {
   ErrorCallback,
   FileSystemCallback,
   LocalFileSystem
-} from "./filesystem";
+} from "../filesystem";
 
 if (window.TEMPORARY == null) {
   window.TEMPORARY = 0;

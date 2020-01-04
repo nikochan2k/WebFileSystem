@@ -3,7 +3,7 @@ import {
   ObjectIdentifierList,
   PutObjectRequest
 } from "aws-sdk/clients/s3";
-import { DIR_SEPARATOR } from "../WebFileSystemConstants";
+import { DIR_SEPARATOR } from "../FileSystemConstants";
 import {
   DirectoryEntry,
   DirectoryEntryCallback,
@@ -15,7 +15,7 @@ import {
 } from "../filesystem";
 import { getKey, getPath, getPrefix } from "./S3Util";
 import { InvalidModificationError, NotFoundError } from "../FileError";
-import { onError, resolveToFullPath } from "../WebFileSystemUtil";
+import { onError, resolveToFullPath } from "../FileSystemUtil";
 import { S3DirectoryReader } from "./S3DirectoryReader";
 import { S3Entry } from "./S3Entry";
 import { S3FileEntry } from "./S3FileEntry";

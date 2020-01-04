@@ -1,9 +1,8 @@
-import {
-  DirectoryEntryAsync,
-  EntryAsync,
-  FileSystemAsync,
-  FileEntryAsync
-} from "./filesystem";
+import { DirectoryEntry, FileEntry } from "./filesystem";
+import { DirectoryEntryAsync } from "./DirectoryEntryAsync";
+import { EntryAsync } from "./EntryAsync";
+import { FileEntryAsync } from "./FileEntryAsync";
+import { FileSystemAsync } from "./FileSystemAsync";
 
 export class Synchronizer {
   constructor(
@@ -21,10 +20,10 @@ export class Synchronizer {
   }
 
   async synchronizeEntries(
-    localEntries: EntryAsync[],
-    remoteEntries: EntryAsync[]
+    localEntries: EntryAsync<FileEntry | DirectoryEntry>[],
+    remoteEntries: EntryAsync<FileEntry | DirectoryEntry>[]
   ) {
-    const newLocalEntries: EntryAsync[] = [];
+    const newLocalEntries: EntryAsync<FileEntry | DirectoryEntry>[] = [];
     outer: while (0 < localEntries.length) {
       const localEntry = localEntries.shift();
       if (!localEntry) {

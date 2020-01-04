@@ -1,4 +1,4 @@
-import { base64ToFile, blobToFile, onError } from "../WebFileSystemUtil";
+import { base64ToFile, blobToFile, onError } from "../FileSystemUtil";
 import {
   ErrorCallback,
   FileCallback,
@@ -6,11 +6,11 @@ import {
   FileWriterCallback,
   VoidCallback
 } from "../filesystem";
+import { FileSystemParams } from "../FileSystemParams";
 import { Idb } from "./Idb";
 import { IdbEntry } from "./IdbEntry";
 import { IdbFileSystem } from "./IdbFileSystem";
 import { IdbFileWriter } from "./IdbFileWriter";
-import { WebFileSystemParams } from "../WebFileSystemParams";
 
 export class IdbFileEntry extends IdbEntry implements FileEntry {
   isFile = true;
@@ -20,7 +20,7 @@ export class IdbFileEntry extends IdbEntry implements FileEntry {
   }
   private idbFileWriter: IdbFileWriter;
 
-  constructor(params: WebFileSystemParams<IdbFileSystem>) {
+  constructor(params: FileSystemParams<IdbFileSystem>) {
     super(params);
   }
 

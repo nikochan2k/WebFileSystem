@@ -1,4 +1,4 @@
-import { DIR_SEPARATOR } from "../WebFileSystemConstants";
+import { DIR_SEPARATOR } from "../FileSystemConstants";
 import {
   DirectoryEntry,
   DirectoryEntryCallback,
@@ -8,20 +8,20 @@ import {
   Flags,
   VoidCallback
 } from "../filesystem";
+import { FileSystemObject } from "../FileSystemObject";
+import { FileSystemParams } from "../FileSystemParams";
 import { IdbDirectoryReader } from "./IdbDirectoryReader";
 import { IdbEntry } from "./IdbEntry";
 import { IdbFileEntry } from "./IdbFileEntry";
 import { IdbFileSystem } from "./IdbFileSystem";
 import { InvalidModificationError, NotFoundError } from "../FileError";
-import { onError, resolveToFullPath } from "../WebFileSystemUtil";
-import { WebFileSystemObject } from "../WebFileSystemObject";
-import { WebFileSystemParams } from "../WebFileSystemParams";
+import { onError, resolveToFullPath } from "../FileSystemUtil";
 
 export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
   public isFile = false;
   public isDirectory = true;
 
-  constructor(params: WebFileSystemParams<IdbFileSystem>) {
+  constructor(params: FileSystemParams<IdbFileSystem>) {
     super(params);
   }
 
@@ -35,7 +35,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
     successCallback: FileEntryCallback | DirectoryEntryCallback,
     errorCallback?: ErrorCallback
   ) {
-    const newObj: WebFileSystemObject = {
+    const newObj: FileSystemObject = {
       name: path.split(DIR_SEPARATOR).pop(),
       fullPath: path,
       lastModified: Date.now(),

@@ -1,4 +1,4 @@
-export interface WebFileSystemObject {
+export interface FileSystemObject {
   name: string;
   fullPath: string;
   lastModified: number;

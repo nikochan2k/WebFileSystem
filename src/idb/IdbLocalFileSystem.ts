@@ -6,7 +6,7 @@ import {
 } from "../filesystem";
 import { Idb } from "./Idb";
 import { NotImplementedError } from "../FileError";
-import { onError } from "../WebFileSystemUtil";
+import { onError } from "../FileSystemUtil";
 
 if (window.TEMPORARY == null) {
   window.TEMPORARY = 0;

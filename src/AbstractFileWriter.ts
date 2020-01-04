@@ -1,4 +1,4 @@
-import { blobToFile, createEmptyFile } from "./WebFileSystemUtil";
+import { blobToFile, createEmptyFile } from "./FileSystemUtil";
 import { FileEntry } from "./filesystem";
 import { FileWriter } from "./filewriter";
 import { NotImplementedError } from "./FileError";

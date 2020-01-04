@@ -1,10 +1,10 @@
 import { countSlash, getRange } from "./IdbUtil";
-import { DIR_SEPARATOR, EMPTY_BLOB } from "../WebFileSystemConstants";
+import { DIR_SEPARATOR, EMPTY_BLOB } from "../FileSystemConstants";
+import { FileSystemObject } from "../FileSystemObject";
 import { IdbDirectoryEntry } from "./IdbDirectoryEntry";
 import { IdbEntry } from "./IdbEntry";
 import { IdbFileEntry } from "./IdbFileEntry";
 import { IdbFileSystem } from "./IdbFileSystem";
-import { WebFileSystemObject } from "../WebFileSystemObject";
 
 const ENTRY_STORE = "entries";
 const CONTENT_STORE = "contents";
@@ -113,7 +113,7 @@ export class Idb {
   }
 
   getEntry(fullPath: string) {
-    return new Promise<WebFileSystemObject>((resolve, reject) => {
+    return new Promise<FileSystemObject>((resolve, reject) => {
       const tx = this.db.transaction([ENTRY_STORE], "readonly");
       const range = IDBKeyRange.only(fullPath);
       tx.onabort = function(ev) {
@@ -213,7 +213,7 @@ export class Idb {
       request.onsuccess = function(ev) {
         const cursor = <IDBCursorWithValue>(<IDBRequest>ev.target).result;
         if (cursor) {
-          const obj = cursor.value as WebFileSystemObject;
+          const obj = cursor.value as FileSystemObject;
 
           if (recursive || slashCount === countSlash(obj.fullPath)) {
             entries.push(
@@ -280,8 +280,8 @@ export class Idb {
     });
   }
 
-  put(obj: WebFileSystemObject, content?: string | Blob) {
-    return new Promise<WebFileSystemObject>((resolve, reject) => {
+  put(obj: FileSystemObject, content?: string | Blob) {
+    return new Promise<FileSystemObject>((resolve, reject) => {
       let tx = this.db.transaction([ENTRY_STORE], "readwrite");
       tx.onabort = function(ev) {
         reject(ev);

@@ -1,10 +1,9 @@
-import { FileEntry, FileEntryAsync, FileSystemAsync } from "./filesystem";
-import { FileWriterAsync } from "./filewriter";
-import { WebEntryAsync } from "./WebEntryAsync";
-import { WebFileWriterAsync } from "./WebFileWriterAsync";
+import { EntryAsync } from "./EntryAsync";
+import { FileEntry } from "./filesystem";
+import { FileSystemAsync } from "./FileSystemAsync";
+import { FileWriterAsync } from "./FileWriterAsync";
 
-export class WebFileEntryAsync extends WebEntryAsync<FileEntry>
-  implements FileEntryAsync {
+export class FileEntryAsync extends EntryAsync<FileEntry> {
   constructor(fileSystemAsync: FileSystemAsync, fileEntry: FileEntry) {
     super(fileSystemAsync, fileEntry);
   }
@@ -13,7 +12,7 @@ export class WebFileEntryAsync extends WebEntryAsync<FileEntry>
     return new Promise<FileWriterAsync>((resolve, reject) => {
       this.entry.createWriter(
         fileWriter => {
-          resolve(new WebFileWriterAsync(fileWriter));
+          resolve(new FileWriterAsync(fileWriter));
         },
         error => {
           reject(error);

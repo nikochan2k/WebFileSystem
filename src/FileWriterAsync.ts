@@ -1,6 +1,6 @@
-import { FileWriterAsync, FileWriter } from "./filewriter";
+import { FileWriter } from "./filewriter";
 
-export class WebFileWriterAsync implements FileWriterAsync {
+export class FileWriterAsync {
   constructor(private fileWriter: FileWriter) {}
 
   get position() {

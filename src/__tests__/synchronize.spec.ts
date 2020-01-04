@@ -1,17 +1,17 @@
 require("fake-indexeddb/auto");
-import { FileSystemAsync } from "../filesystem";
+import { FileSystemAsync } from "../FileSystemAsync";
 import { IdbLocalFileSystem } from "../idb/IdbLocalFileSystem";
+import { LocalFileSystemAsync } from "../LocalFileSystemAsync";
 import { S3 } from "aws-sdk";
 import { S3LocalFileSystem } from "../s3/S3LocalFileSystem";
 import { Synchronizer } from "../Synchronizer";
-import { WebLocalFileSystemAsync } from "../WebLocalFileSystemAsync";
 
 let local: FileSystemAsync;
 let remote: FileSystemAsync;
 let synchronizer: Synchronizer;
 beforeAll(async () => {
   const idbLocalFileSystem = new IdbLocalFileSystem("web-file-system-test");
-  const idbFactory = new WebLocalFileSystemAsync(idbLocalFileSystem);
+  const idbFactory = new LocalFileSystemAsync(idbLocalFileSystem);
   local = await idbFactory.requestFileSystemAsync(
     window.PERSISTENT,
     Number.MAX_VALUE
@@ -39,7 +39,7 @@ beforeAll(async () => {
     "web-file-system-test",
     options
   );
-  const s3Factory = new WebLocalFileSystemAsync(s3LocalFileSystem);
+  const s3Factory = new LocalFileSystemAsync(s3LocalFileSystem);
   remote = await s3Factory.requestFileSystemAsync(
     window.PERSISTENT,
     Number.MAX_VALUE

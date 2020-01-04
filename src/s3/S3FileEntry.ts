@@ -1,4 +1,4 @@
-import { blobToFile, onError } from "../WebFileSystemUtil";
+import { blobToFile, onError } from "../FileSystemUtil";
 import {
   ErrorCallback,
   FileCallback,
@@ -6,13 +6,13 @@ import {
   FileWriterCallback,
   VoidCallback
 } from "../filesystem";
+import { FileSystemParams } from "../FileSystemParams";
 import { getKey } from "./S3Util";
 import { S3Entry } from "./S3Entry";
 import { S3FileSystem } from "./S3FileSystem";
 import { S3FileWriter } from "./S3FileWriter";
-import { WebFileSystemParams } from "../WebFileSystemParams";
 
-export interface S3FileParams extends WebFileSystemParams<S3FileSystem> {
+export interface S3FileParams extends FileSystemParams<S3FileSystem> {
   size: number;
 }
 
