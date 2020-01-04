@@ -1,13 +1,11 @@
 require("fake-indexeddb/auto");
 import { FileSystemAsync } from "../FileSystemAsync";
-import { IdbLocalFileSystem } from "../idb/IdbLocalFileSystem";
+import { IdbLocalFileSystemAsync } from "../idb/IdbLocalFileSystemAsync";
 import { InvalidModificationError, NotFoundError } from "../FileError";
-import { LocalFileSystemAsync } from "../LocalFileSystemAsync";
 
 let fs: FileSystemAsync;
 beforeAll(async () => {
-  const idbLocalFileSystem = new IdbLocalFileSystem("web-file-system-test");
-  const factory = new LocalFileSystemAsync(idbLocalFileSystem);
+  const factory = new IdbLocalFileSystemAsync("web-file-system-test");
   fs = await factory.requestFileSystemAsync(
     window.PERSISTENT,
     Number.MAX_VALUE
