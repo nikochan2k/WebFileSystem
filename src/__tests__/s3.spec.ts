@@ -1,7 +1,8 @@
-import { WebLocalFileSystemAsync } from "../WebLocalFileSystemAsync";
 import { FileSystemAsync } from "../filesystem";
+import { InvalidModificationError, NotFoundError } from "../FileError";
 import { S3 } from "aws-sdk";
-import { NotFoundError, InvalidModificationError } from "../FileError";
+import { S3LocalFileSystem } from "../s3/S3LocalFileSystem";
+import { WebLocalFileSystemAsync } from "../WebLocalFileSystemAsync";
 
 let fs: FileSystemAsync;
 beforeAll(async () => {
@@ -23,8 +24,14 @@ beforeAll(async () => {
     await s3.deleteObject({ Bucket: bucket, Key: content.Key }).promise();
   }
 
-  const factory = new WebLocalFileSystemAsync(bucket, "s3", options);
-  fs = await factory.requestFileSystemAsync(
+  const s3LocalFileSystem = new S3LocalFileSystem(
+    "web-file-system-test",
+    options
+  );
+  const webLocalFileSystemAsync = new WebLocalFileSystemAsync(
+    s3LocalFileSystem
+  );
+  fs = await webLocalFileSystemAsync.requestFileSystemAsync(
     window.PERSISTENT,
     Number.MAX_VALUE
   );

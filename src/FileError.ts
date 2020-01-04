@@ -2,25 +2,47 @@ export interface FileError extends DOMError {
   code: number;
 }
 
-export class InvalidStateError implements FileError {
-  constructor(public filePath: string, public message?: string) {}
-  name: "Invalid state error";
-  code: 7;
+export abstract class AbstractFileError implements FileError {
+  abstract name: string;
+  abstract code: number;
+  stack: string;
+  constructor(
+    public bucket: string,
+    public filePath: string,
+    public detail?: string
+  ) {
+    this.stack = new Error().stack;
+  }
 }
 
-export class InvalidModificationError implements FileError {
-  constructor(public filePath: string, public message?: string) {}
-  name: "Invalid modification error";
-  code: 9;
+export class InvalidStateError extends AbstractFileError {
+  constructor(bucket: string, filePath: string, detail?: string) {
+    super(bucket, filePath, detail);
+  }
+  name = "Invalid state error";
+  code = 7;
 }
 
-export class NotFoundError implements FileError {
-  constructor(public filePath: string, public message?: string) {}
-  name: "Not found";
-  code: 1;
+export class InvalidModificationError extends AbstractFileError {
+  constructor(bucket: string, filePath: string, detail?: string) {
+    super(bucket, filePath, detail);
+  }
+  name = "Invalid modification error";
+  code = 9;
 }
 
-export const NOT_IMPLEMENTED_ERR: FileError = {
-  name: "Not implemented",
-  code: -1
-};
+export class NotFoundError extends AbstractFileError {
+  constructor(bucket: string, filePath: string, detail?: string) {
+    super(bucket, filePath, detail);
+  }
+  name = "Not found";
+  code = 1;
+}
+
+export class NotImplementedError extends AbstractFileError {
+  constructor(bucket: string, filePath: string, detail?: string) {
+    super(bucket, filePath, detail);
+  }
+  name = "Not implemented";
+  code = -1;
+}

@@ -1,7 +1,7 @@
 import { blobToFile, createEmptyFile } from "./WebFileSystemUtil";
 import { FileEntry } from "./filesystem";
 import { FileWriter } from "./filewriter";
-import { NOT_IMPLEMENTED_ERR } from "./FileError";
+import { NotImplementedError } from "./FileError";
 
 export abstract class AbstractFileWriter<T extends FileEntry>
   implements FileWriter {
@@ -97,7 +97,10 @@ export abstract class AbstractFileWriter<T extends FileEntry>
   }
 
   abort(): void {
-    throw NOT_IMPLEMENTED_ERR;
+    throw new NotImplementedError(
+      this.fileEntry.filesystem.name,
+      this.fileEntry.fullPath
+    );
   }
 
   INIT: number;
@@ -117,11 +120,17 @@ export abstract class AbstractFileWriter<T extends FileEntry>
     listener: EventListenerOrEventListenerObject,
     options?: boolean | AddEventListenerOptions
   ): void {
-    throw NOT_IMPLEMENTED_ERR;
+    throw new NotImplementedError(
+      this.fileEntry.filesystem.name,
+      this.fileEntry.fullPath
+    );
   }
 
   dispatchEvent(event: Event): boolean {
-    throw NOT_IMPLEMENTED_ERR;
+    throw new NotImplementedError(
+      this.fileEntry.filesystem.name,
+      this.fileEntry.fullPath
+    );
   }
 
   removeEventListener(
@@ -129,6 +138,9 @@ export abstract class AbstractFileWriter<T extends FileEntry>
     callback: EventListenerOrEventListenerObject,
     options?: boolean | EventListenerOptions
   ): void {
-    throw NOT_IMPLEMENTED_ERR;
+    throw new NotImplementedError(
+      this.fileEntry.filesystem.name,
+      this.fileEntry.fullPath
+    );
   }
 }

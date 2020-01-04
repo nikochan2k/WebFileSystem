@@ -4,9 +4,16 @@ import {
   ErrorCallback,
   FileSystemCallback
 } from "../filesystem";
-import { NOT_IMPLEMENTED_ERR } from "../FileError";
+import { NotImplementedError } from "../FileError";
 import { S3 } from "aws-sdk";
 import { S3FileSystem } from "./S3FileSystem";
+
+if (window.TEMPORARY == null) {
+  window.TEMPORARY = 0;
+}
+if (window.PERSISTENT == null) {
+  window.PERSISTENT = 1;
+}
 
 export class S3LocalFileSystem extends AbstractLocalFileSystem {
   constructor(bucket: string, private options: S3.ClientConfiguration) {
@@ -36,6 +43,6 @@ export class S3LocalFileSystem extends AbstractLocalFileSystem {
     successCallback: EntryCallback,
     errorCallback?: ErrorCallback
   ): void {
-    throw NOT_IMPLEMENTED_ERR;
+    throw new NotImplementedError("", url);
   }
 }

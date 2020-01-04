@@ -2,8 +2,6 @@
   "name": "web-file-system",
   "version": "0.0.1",
   "description": "Use the FileSystem API to communicate with every Cloud providers.",
-  "main": "index.js",
-  "private": true,
   "author": "Yoshihiro Seki",
   "license": "MIT",
   "files": [

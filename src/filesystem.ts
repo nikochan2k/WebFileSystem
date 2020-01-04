@@ -100,11 +100,6 @@ export interface Flags {
  */
 export interface FileSystem {
   /**
-   * Local filesystem or not.
-   */
-  isLocal: boolean;
-
-  /**
    * This is the name of the file system. The specifics of naming filesystems is unspecified, but a name must be unique across the list of exposed file systems.
    * @readonly
    */
@@ -428,11 +423,6 @@ export interface ErrorCallback {
  * This interface represents a file system.
  */
 export interface FileSystemAsync {
-  /**
-   * Local filesystem or not.
-   */
-  isLocal: boolean;
-
   /**
    * This is the name of the file system. The specifics of naming filesystems is unspecified, but a name must be unique across the list of exposed file systems.
    */

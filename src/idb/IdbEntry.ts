@@ -10,10 +10,9 @@ import {
   VoidCallback
 } from "../filesystem";
 import { IdbFileSystem } from "./IdbFileSystem";
-import { NOT_IMPLEMENTED_ERR } from "../FileError";
-import { onError } from "../WebFileSystemUtil";
-import { WebFileSystemParams } from "../WebFileSystemParams";
+import { NotImplementedError } from "../FileError";
 import { WebFileSystemObject } from "../WebFileSystemObject";
+import { WebFileSystemParams } from "../WebFileSystemParams";
 
 export abstract class IdbEntry implements Entry {
   abstract isFile: boolean;
@@ -42,7 +41,7 @@ export abstract class IdbEntry implements Entry {
     successCallback: DirectoryEntryCallback,
     errorCallback?: ErrorCallback | undefined
   ): void {
-    throw NOT_IMPLEMENTED_ERR;
+    throw new NotImplementedError(this.filesystem.name, this.fullPath);
   }
 
   getMetadata(
@@ -96,7 +95,7 @@ export abstract class IdbEntry implements Entry {
     successCallback?: EntryCallback | undefined,
     errorCallback?: ErrorCallback | undefined
   ): void {
-    throw NOT_IMPLEMENTED_ERR;
+    throw new NotImplementedError(this.filesystem.name, this.fullPath);
   }
 
   copyTo(
@@ -105,7 +104,7 @@ export abstract class IdbEntry implements Entry {
     successCallback?: EntryCallback | undefined,
     errorCallback?: ErrorCallback | undefined
   ): void {
-    throw NOT_IMPLEMENTED_ERR;
+    throw new NotImplementedError(this.filesystem.name, this.fullPath);
   }
 
   toURL(): string {

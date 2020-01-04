@@ -10,11 +10,7 @@ export class Synchronizer {
     public local: FileSystemAsync,
     public remote: FileSystemAsync,
     public mirror = false
-  ) {
-    if (!local.isLocal) {
-      throw new Error("local filesystem is not local");
-    }
-  }
+  ) {}
 
   async transfer(local: FileEntryAsync, remote: FileEntryAsync) {
     const file = await local.file();
@@ -31,6 +27,9 @@ export class Synchronizer {
     const newLocalEntries: EntryAsync[] = [];
     outer: while (0 < localEntries.length) {
       const localEntry = localEntries.shift();
+      if (!localEntry) {
+        break;
+      }
       for (let i = 0, end = remoteEntries.length; i < end; i++) {
         const remoteEntry = remoteEntries[i];
         if (localEntry.name === remoteEntry.name) {

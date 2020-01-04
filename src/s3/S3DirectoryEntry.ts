@@ -41,7 +41,10 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
       (err, data) => {
         if (err) {
           if (err.statusCode === 404) {
-            onError(new NotFoundError(getPath(key), "getFile"), errorCallback);
+            onError(
+              new NotFoundError(this.filesystem.name, getPath(key)),
+              errorCallback
+            );
           } else {
             onError(err, errorCallback);
           }
@@ -103,14 +106,22 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
         if (entry.isDirectory) {
           const path = getPath(key);
           onError(
-            new InvalidModificationError(path, `${path} is not a file`),
+            new InvalidModificationError(
+              this.filesystem.name,
+              path,
+              `${path} is not a file`
+            ),
             errorCallback
           );
           return;
         }
         if (options.create && options.exclusive) {
           onError(
-            new InvalidModificationError(path, `${path} already exists`),
+            new InvalidModificationError(
+              this.filesystem.name,
+              path,
+              `${path} already exists`
+            ),
             errorCallback
           );
           return;
@@ -176,7 +187,7 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
             );
             return;
           }
-          errorCallback(new NotFoundError(path, "getDirectory"));
+          errorCallback(new NotFoundError(this.filesystem.name, path));
         })
         .catch(err => {
           onError(err, errorCallback);
@@ -200,7 +211,11 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
       key,
       () => {
         onError(
-          new InvalidModificationError(path, `${path} is not a directory`),
+          new InvalidModificationError(
+            this.filesystem.name,
+            path,
+            `${path} is not a directory`
+          ),
           errorCallback
         );
       },
@@ -224,6 +239,7 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
       () => {
         onError(
           new InvalidModificationError(
+            this.filesystem.name,
             this.fullPath,
             `${this.fullPath} is not a directory`
           ),
@@ -237,6 +253,7 @@ export class S3DirectoryEntry extends S3Entry implements DirectoryEntry {
               if (result) {
                 onError(
                   new InvalidModificationError(
+                    this.filesystem.name,
                     this.fullPath,
                     `${this.fullPath} is not empty`
                   ),

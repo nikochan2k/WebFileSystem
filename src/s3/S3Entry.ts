@@ -8,7 +8,7 @@ import {
   MetadataCallback,
   VoidCallback
 } from "../filesystem";
-import { NOT_IMPLEMENTED_ERR } from "../FileError";
+import { NotImplementedError } from "../FileError";
 import { S3FileSystem } from "./S3FileSystem";
 import { WebFileSystemParams } from "../WebFileSystemParams";
 
@@ -45,7 +45,7 @@ export abstract class S3Entry implements Entry {
     successCallback: VoidCallback,
     errorCallback?: ErrorCallback
   ): void {
-    errorCallback(NOT_IMPLEMENTED_ERR);
+    throw new NotImplementedError(this.filesystem.name, this.fullPath);
   }
 
   moveTo(
@@ -54,7 +54,7 @@ export abstract class S3Entry implements Entry {
     successCallback?: EntryCallback,
     errorCallback?: ErrorCallback
   ): void {
-    throw NOT_IMPLEMENTED_ERR;
+    throw new NotImplementedError(this.filesystem.name, this.fullPath);
   }
 
   copyTo(
@@ -63,7 +63,7 @@ export abstract class S3Entry implements Entry {
     successCallback?: EntryCallback,
     errorCallback?: ErrorCallback
   ): void {
-    throw NOT_IMPLEMENTED_ERR;
+    throw new NotImplementedError(this.filesystem.name, this.fullPath);
   }
 
   toURL(): string {

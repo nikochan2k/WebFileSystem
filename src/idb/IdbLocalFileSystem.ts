@@ -5,8 +5,15 @@ import {
   FileSystemCallback
 } from "../filesystem";
 import { Idb } from "./Idb";
-import { NOT_IMPLEMENTED_ERR } from "../FileError";
+import { NotImplementedError } from "../FileError";
 import { onError } from "../WebFileSystemUtil";
+
+if (window.TEMPORARY == null) {
+  window.TEMPORARY = 0;
+}
+if (window.PERSISTENT == null) {
+  window.PERSISTENT = 1;
+}
 
 export class IdbLocalFileSystem extends AbstractLocalFileSystem {
   requestFileSystem(
@@ -35,6 +42,6 @@ export class IdbLocalFileSystem extends AbstractLocalFileSystem {
     successCallback: EntryCallback,
     errorCallback?: ErrorCallback | undefined
   ): void {
-    throw NOT_IMPLEMENTED_ERR;
+    throw new NotImplementedError("", url);
   }
 }

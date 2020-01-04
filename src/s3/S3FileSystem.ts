@@ -1,11 +1,9 @@
-import { FileSystem, DirectoryEntry } from "../filesystem";
+import { DIR_SEPARATOR } from "../WebFileSystemConstants";
+import { DirectoryEntry, FileSystem } from "../filesystem";
 import { S3 } from "aws-sdk";
 import { S3DirectoryEntry } from "./S3DirectoryEntry";
-import { DIR_SEPARATOR } from "../WebFileSystemConstants";
 
 export class S3FileSystem implements FileSystem {
-  isLocal = false;
-
   get name() {
     return this.bucket;
   }

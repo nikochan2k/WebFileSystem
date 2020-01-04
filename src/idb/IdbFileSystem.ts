@@ -4,8 +4,6 @@ import { Idb } from "./Idb";
 import { IdbDirectoryEntry } from "./IdbDirectoryEntry";
 
 export class IdbFileSystem implements FileSystem {
-  isLocal = true;
-
   get name() {
     return this.idb.db.name;
   }

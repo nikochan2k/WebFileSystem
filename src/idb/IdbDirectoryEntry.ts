@@ -89,14 +89,22 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
         if (obj) {
           if (obj.size == null) {
             onError(
-              new InvalidModificationError(path, `${path} is not a file`),
+              new InvalidModificationError(
+                this.filesystem.name,
+                path,
+                `${path} is not a file`
+              ),
               errorCallback
             );
             return;
           }
           if (options.create && options.exclusive) {
             onError(
-              new InvalidModificationError(path, `${path} already exists`),
+              new InvalidModificationError(
+                this.filesystem.name,
+                path,
+                `${path} already exists`
+              ),
               errorCallback
             );
             return;
@@ -111,7 +119,10 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
           if (options.create) {
             this.doCreateObject(true, path, successCallback, errorCallback);
           } else {
-            onError(new NotFoundError(path, "getFile"), errorCallback);
+            onError(
+              new NotFoundError(this.filesystem.name, path),
+              errorCallback
+            );
           }
         }
       })
@@ -143,7 +154,11 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
         if (obj) {
           if (obj.size != null) {
             onError(
-              new InvalidModificationError(path, `${path} is not a directory`),
+              new InvalidModificationError(
+                this.filesystem.name,
+                path,
+                `${path} is not a directory`
+              ),
               errorCallback
             );
             return;
@@ -171,7 +186,10 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
           if (options.create) {
             this.doCreateObject(false, path, successCallback, errorCallback);
           } else {
-            onError(new NotFoundError(path, "getDirectory"), errorCallback);
+            onError(
+              new NotFoundError(this.filesystem.name, path),
+              errorCallback
+            );
           }
         }
       })
@@ -191,6 +209,7 @@ export class IdbDirectoryEntry extends IdbEntry implements DirectoryEntry {
         if (result) {
           onError(
             new InvalidModificationError(
+              this.filesystem.name,
               this.fullPath,
               `${this.fullPath} is not empty`
             ),

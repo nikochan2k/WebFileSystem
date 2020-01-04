@@ -1,7 +1,8 @@
 require("fake-indexeddb/auto");
-
 import { FileSystemAsync } from "../filesystem";
+import { IdbLocalFileSystem } from "../idb/IdbLocalFileSystem";
 import { S3 } from "aws-sdk";
+import { S3LocalFileSystem } from "../s3/S3LocalFileSystem";
 import { Synchronizer } from "../Synchronizer";
 import { WebLocalFileSystemAsync } from "../WebLocalFileSystemAsync";
 
@@ -9,7 +10,8 @@ let local: FileSystemAsync;
 let remote: FileSystemAsync;
 let synchronizer: Synchronizer;
 beforeAll(async () => {
-  const idbFactory = new WebLocalFileSystemAsync("web-file-system-test");
+  const idbLocalFileSystem = new IdbLocalFileSystem("web-file-system-test");
+  const idbFactory = new WebLocalFileSystemAsync(idbLocalFileSystem);
   local = await idbFactory.requestFileSystemAsync(
     window.PERSISTENT,
     Number.MAX_VALUE
@@ -33,8 +35,12 @@ beforeAll(async () => {
     await s3.deleteObject({ Bucket: bucket, Key: content.Key }).promise();
   }
 
-  const s3FS = new WebLocalFileSystemAsync(bucket, "s3", options);
-  remote = await s3FS.requestFileSystemAsync(
+  const s3LocalFileSystem = new S3LocalFileSystem(
+    "web-file-system-test",
+    options
+  );
+  const s3Factory = new WebLocalFileSystemAsync(s3LocalFileSystem);
+  remote = await s3Factory.requestFileSystemAsync(
     window.PERSISTENT,
     Number.MAX_VALUE
   );

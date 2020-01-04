@@ -1,18 +1,14 @@
 import {
   EntryAsync,
   FileSystemAsync,
-  LocalFileSystemAsync
+  LocalFileSystemAsync,
+  LocalFileSystem
 } from "./filesystem";
-import { NOT_IMPLEMENTED_ERR } from "./FileError";
+import { NotImplementedError } from "./FileError";
 import { WebFileSystemAsync } from "./WebFileSystemAsync";
-import { WebLocalFileSystem } from "./WebLocalFileSystem";
 
 export class WebLocalFileSystemAsync implements LocalFileSystemAsync {
-  constructor(bucket: string, provider?: string, options?: any) {
-    this.fileSystemFactory = new WebLocalFileSystem(bucket, provider, options);
-  }
-
-  private fileSystemFactory: WebLocalFileSystem;
+  constructor(public localFileSystem: LocalFileSystem) {}
 
   get TEMPORARY() {
     return window.TEMPORARY;
@@ -24,20 +20,20 @@ export class WebLocalFileSystemAsync implements LocalFileSystemAsync {
 
   requestFileSystemAsync(type: number, size: number): Promise<FileSystemAsync> {
     return new Promise<FileSystemAsync>((resolve, reject) => {
-      this.fileSystemFactory.requestFileSystem(
+      this.localFileSystem.requestFileSystem(
         type,
         size,
         filesystem => {
           resolve(new WebFileSystemAsync(filesystem));
         },
-        error => {
-          reject(error);
+        err => {
+          reject(err);
         }
       );
     });
   }
 
   resolveLocalFileSystemAsyncURL(url: string): Promise<EntryAsync> {
-    throw NOT_IMPLEMENTED_ERR;
+    throw new NotImplementedError("", url);
   }
 }
